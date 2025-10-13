@@ -325,6 +325,25 @@ body {
     box-shadow: 0 4px 8px rgba(111, 66, 193, 0.3);
 }
 
+.force-btn {
+    padding: 12px 25px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.force-btn:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
 .storage-btn {
     padding: 12px 25px;
     background: #fd7e14;
@@ -416,7 +435,7 @@ body {
         align-items: center;
     }
     
-    .save-btn, .export-btn, .sync-btn, .storage-btn {
+    .save-btn, .export-btn, .sync-btn, .force-btn, .storage-btn {
         margin-right: 0;
         width: 250px;
     }
