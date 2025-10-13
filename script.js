@@ -34,7 +34,6 @@ async function initApp() {
     updateDateDisplay();
     setupLineButtons();
     updateStorageStatus();
-    addForceRecreateButton();
     
     setTimeout(() => {
         loadData(currentDate);
@@ -501,18 +500,6 @@ async function forceRecreateDataFile() {
     }
 }
 
-// Добавление кнопки для принудительного пересоздания
-function addForceRecreateButton() {
-    const controls = document.querySelector('.controls');
-    const forceButton = document.createElement('button');
-    forceButton.className = 'force-btn';
-    forceButton.id = 'force-recreate-btn';
-    forceButton.textContent = '🔄 Пересоздать файл';
-    forceButton.title = 'Принудительно пересоздать файл данных в облаке (исправляет конфликты)';
-    forceButton.addEventListener('click', forceRecreateDataFile);
-    controls.insertBefore(forceButton, document.getElementById('storage-btn'));
-}
-
 // Показать статус
 function showStatus(message, type = 'info') {
     const statusElement = document.getElementById('status');
@@ -543,6 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('save-btn').addEventListener('click', saveData);
     document.getElementById('export-btn').addEventListener('click', exportData);
     document.getElementById('sync-btn').addEventListener('click', syncFromCloud);
+    document.getElementById('force-recreate-btn').addEventListener('click', forceRecreateDataFile);
     document.getElementById('storage-btn').addEventListener('click', toggleStorageMode);
     document.getElementById('background-img').addEventListener('error', handleImageError);
     
@@ -553,29 +541,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('login').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') checkAuth();
     });
-    
-    // Добавляем стиль для кнопки пересоздания
-    const forceButtonStyle = document.createElement('style');
-    forceButtonStyle.textContent = `
-        .force-btn {
-            padding: 12px 25px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-right: 10px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        .force-btn:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
-        }
-    `;
-    document.head.appendChild(forceButtonStyle);
     
     showStatus('Загружаем приложение...', 'info');
 });
