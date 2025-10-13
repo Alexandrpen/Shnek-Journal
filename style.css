@@ -327,7 +327,7 @@ body {
     border-radius: 6px;
 }
 
-/* Адаптивность */
+/* Адаптивность для iPhone 13 (390x844) и мобильных устройств */
 @media (max-width: 1250px) {
     .container {
         width: 95%;
@@ -355,27 +355,248 @@ body {
 @media (max-width: 768px) {
     body {
         padding: 10px;
+        background: #f5f5f5;
     }
     
     .container {
+        width: 100%;
+        padding: 15px;
+        min-height: auto;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    .background-image {
+        display: none; /* Скрываем фоновое изображение на мобильных */
+    }
+    
+    .line-selector {
+        position: relative;
+        top: auto;
+        left: auto;
+        justify-content: center;
+        margin: 20px 0;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .line-btn {
+        padding: 10px 15px;
+        font-size: 12px;
+        margin: 5px;
+    }
+    
+    .input-field {
+        position: relative;
+        width: 60px;
+        height: 40px;
+        margin: 5px;
+        display: inline-block;
+        top: auto !important;
+        left: auto !important;
+    }
+    
+    .input-fields-container {
+        text-align: center;
+        margin: 20px 0;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        justify-items: center;
+    }
+    
+    .calendar-container {
+        position: relative;
+        width: 100%;
+        height: auto;
+        top: auto;
+        right: auto;
+        margin: 20px 0;
         padding: 10px;
     }
     
+    .flatpickr-calendar {
+        width: 100% !important;
+    }
+    
+    .flatpickr-day {
+        height: 40px;
+        line-height: 40px;
+    }
+    
     .controls {
+        position: relative;
+        bottom: auto;
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        align-items: center;
+        gap: 15px;
+        padding: 20px 10px;
     }
     
     .save-btn, .sync-btn {
+        width: 100%;
         margin-right: 0;
-        width: 250px;
+        padding: 15px;
+        font-size: 18px;
     }
     
     #status {
         margin-left: 0;
         margin-top: 10px;
         text-align: center;
+        font-size: 14px;
+        padding: 10px;
+        order: 3;
+    }
+    
+    .current-date {
+        font-size: 16px;
+        padding: 10px;
+    }
+}
+
+/* Адаптивность для iPhone 13 (390px) и меньше */
+@media (max-width: 390px) {
+    body {
+        padding: 5px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .auth-container {
+        width: 90%;
+        padding: 20px;
+    }
+    
+    .line-selector {
+        gap: 8px;
+    }
+    
+    .line-btn {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+    
+    .input-field {
+        width: 50px;
+        height: 35px;
+        font-size: 14px;
+    }
+    
+    .input-fields-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    
+    .calendar-container {
+        padding: 8px;
+    }
+    
+    .flatpickr-day {
+        height: 35px;
+        line-height: 35px;
+        font-size: 12px;
+    }
+    
+    .save-btn, .sync-btn {
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    #status {
+        font-size: 12px;
+        padding: 8px;
+    }
+    
+    .current-date {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+
+/* Горизонтальная ориентация на мобильных */
+@media (max-width: 844px) and (orientation: landscape) {
+    .container {
+        min-height: 500px;
+    }
+    
+    .line-selector {
+        margin: 10px 0;
+    }
+    
+    .input-fields-container {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 5px;
+        margin: 10px 0;
+    }
+    
+    .calendar-container {
+        width: 50%;
+        float: right;
+        margin: 10px 0;
+    }
+    
+    .controls {
+        clear: both;
+        padding: 15px 10px;
+    }
+}
+
+/* Поддержка темной темы на iOS */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #121212;
+    }
+    
+    .container {
+        background: #1e1e1e;
+        color: #ffffff;
+    }
+    
+    .auth-container {
+        background: #2d2d2d;
+        color: #ffffff;
+    }
+    
+    .auth-container h2 {
+        color: #ffffff;
+    }
+    
+    .auth-input {
+        background: #3d3d3d;
+        color: #ffffff;
+        border-color: #555;
+    }
+    
+    .line-btn {
+        background: #3d3d3d;
+        color: #ffffff;
+        border-color: #555;
+    }
+    
+    .line-btn.active {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .input-field {
+        background: #3d3d3d;
+        color: #ffffff;
+    }
+    
+    .calendar-container {
+        background: #2d2d2d;
+        border-color: #28a745;
+    }
+    
+    .current-date {
+        background: #3d3d3d;
+        color: #ffffff;
+    }
+    
+    .controls {
+        background: rgba(45, 45, 45, 0.95);
     }
 }
