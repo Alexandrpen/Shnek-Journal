@@ -34,6 +34,7 @@ async function initApp() {
     updateDateDisplay();
     setupLineButtons();
     updateStorageStatus();
+    addForceRecreateButton();
     
     setTimeout(() => {
         loadData(currentDate);
@@ -253,9 +254,79 @@ async function saveData() {
         }
         highlightDates();
     } catch (e) {
-        showStatus('Ошибка сохранения данных: ' + e.message, 'error');
+        if (e.message.includes('409')) {
+            // Конфликт версий - предлагаем решение
+            showStatus('Конфликт версий. ' + e.message + ' Попробуйте синхронизировать или пересоздать файл.', 'error');
+            
+            // Автоматически пытаемся решить конфликт
+            setTimeout(async () => {
+                if (confirm('Обнаружен конфликт версий данных. Хотите автоматически решить конфликт?')) {
+                    try {
+                        await resolveDataConflict();
+                    } catch (resolveError) {
+                        showStatus('Не удалось автоматически решить конфликт: ' + resolveError.message, 'error');
+                    }
+                }
+            }, 1000);
+        } else {
+            showStatus('Ошибка сохранения данных: ' + e.message, 'error');
+        }
         console.error('Ошибка сохранения:', e);
     }
+}
+
+// Разрешение конфликта данных
+async function resolveDataConflict() {
+    showStatus('Пытаемся решить конфликт данных...', 'info');
+    
+    try {
+        // Загружаем свежие данные из облака
+        const cloudData = await gitHubDB.loadData();
+        
+        // Объединяем данные: берем последние версии из обоих источников
+        const mergedData = mergeData(journalData, cloudData);
+        
+        // Сохраняем объединенные данные
+        journalData = mergedData;
+        await gitHubDB.saveData(journalData);
+        localStorage.setItem('journalShnekaData', JSON.stringify(journalData));
+        
+        // Перезагружаем данные
+        loadData(currentDate);
+        showStatus('Конфликт данных успешно разрешен!', 'success');
+    } catch (error) {
+        throw new Error('Не удалось разрешить конфликт: ' + error.message);
+    }
+}
+
+// Объединение данных при конфликте
+function mergeData(localData, cloudData) {
+    const merged = { line1: {}, line2: {}, line3: {} };
+    
+    // Объединяем данные для каждой линии
+    ['line1', 'line2', 'line3'].forEach(line => {
+        merged[line] = { ...cloudData[line] };
+        
+        if (localData[line]) {
+            Object.keys(localData[line]).forEach(date => {
+                // Если дата есть в обоих наборах, берем более позднюю версию
+                if (merged[line][date]) {
+                    // Сравниваем по времени последнего изменения (простая эвристика)
+                    const localHasData = Object.values(localData[line][date]).some(v => parseFloat(v) > 0);
+                    const cloudHasData = Object.values(merged[line][date]).some(v => parseFloat(v) > 0);
+                    
+                    if (localHasData && !cloudHasData) {
+                        merged[line][date] = localData[line][date];
+                    }
+                    // Иначе оставляем облачную версию
+                } else {
+                    merged[line][date] = localData[line][date];
+                }
+            });
+        }
+    });
+    
+    return merged;
 }
 
 // Подсветка дат с данными
@@ -411,6 +482,37 @@ async function syncFromCloud() {
     }
 }
 
+// Принудительное пересоздание файла данных (для исправления конфликтов)
+async function forceRecreateDataFile() {
+    if (useLocalStorage) {
+        showStatus('Сначала переключитесь в облачный режим', 'warning');
+        return;
+    }
+    
+    if (!confirm('ВНИМАНИЕ: Это действие перезапишет все облачные данные текущими локальными данными. Продолжить?')) {
+        return;
+    }
+    
+    try {
+        await gitHubDB.forceCreateNewFile(journalData);
+        showStatus('Файл данных успешно пересоздан в облаке', 'success');
+    } catch (error) {
+        showStatus('Ошибка пересоздания файла: ' + error.message, 'error');
+    }
+}
+
+// Добавление кнопки для принудительного пересоздания
+function addForceRecreateButton() {
+    const controls = document.querySelector('.controls');
+    const forceButton = document.createElement('button');
+    forceButton.className = 'force-btn';
+    forceButton.id = 'force-recreate-btn';
+    forceButton.textContent = '🔄 Пересоздать файл';
+    forceButton.title = 'Принудительно пересоздать файл данных в облаке (исправляет конфликты)';
+    forceButton.addEventListener('click', forceRecreateDataFile);
+    controls.insertBefore(forceButton, document.getElementById('storage-btn'));
+}
+
 // Показать статус
 function showStatus(message, type = 'info') {
     const statusElement = document.getElementById('status');
@@ -451,6 +553,29 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('login').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') checkAuth();
     });
+    
+    // Добавляем стиль для кнопки пересоздания
+    const forceButtonStyle = document.createElement('style');
+    forceButtonStyle.textContent = `
+        .force-btn {
+            padding: 12px 25px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .force-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+    `;
+    document.head.appendChild(forceButtonStyle);
     
     showStatus('Загружаем приложение...', 'info');
 });
