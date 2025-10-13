@@ -8,7 +8,6 @@ let journalData = {};
 let currentDate = new Date();
 let calendar;
 let currentLine = 'line1';
-let useLocalStorage = true;
 
 // Функция проверки авторизации
 function checkAuth() {
@@ -28,17 +27,22 @@ function checkAuth() {
 
 // Инициализация приложения
 async function initApp() {
-    await loadStorageData();
+    // Запрашиваем токен при первом запуске
+    if (!gitHubDB.hasToken()) {
+        const tokenSet = await gitHubDB.requestToken();
+        if (!tokenSet) {
+            showStatus('Для работы приложения требуется GitHub токен', 'error');
+            return;
+        }
+    }
+    
+    await loadDataFromCloud();
     setupInputValidation();
     initCalendar();
     updateDateDisplay();
     setupLineButtons();
-    updateStorageStatus();
     
-    setTimeout(() => {
-        loadData(currentDate);
-        showStatus('Журнал загружен. Введите данные и нажмите "Сохранить данные".', 'success');
-    }, 200);
+    showStatus('Журнал загружен из облака', 'success');
 }
 
 // Настройка кнопок линий
@@ -46,12 +50,11 @@ function setupLineButtons() {
     const lineButtons = document.querySelectorAll('.line-btn');
     lineButtons.forEach(btn => {
         btn.addEventListener('click', function() {
-            saveData();
             lineButtons.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             currentLine = this.getAttribute('data-line');
-            loadData(currentDate);
-            showStatus(`Загружена ${this.textContent}`, 'info');
+            loadDataForCurrentDate();
+            showStatus(`Переключено на ${this.textContent}`, 'info');
         });
     });
 }
@@ -68,7 +71,7 @@ function initCalendar() {
             if (selectedDates[0]) {
                 currentDate = selectedDates[0];
                 updateDateDisplay();
-                loadData(currentDate);
+                loadDataForCurrentDate();
                 showStatus(`Загружены данные за ${formatDate(currentDate)} для ${getCurrentLineName()}`, 'info');
             }
         },
@@ -131,58 +134,42 @@ function updateDateDisplay() {
         currentDate.toLocaleDateString('ru-RU', options);
 }
 
-// Загрузка данных из хранилища
-async function loadStorageData() {
+// Загрузка данных из облака
+async function loadDataFromCloud() {
     try {
-        if (useLocalStorage) {
-            const saved = localStorage.getItem('journalShnekaData');
-            if (saved) {
-                journalData = JSON.parse(saved);
-                if (!journalData.line1) journalData.line1 = {};
-                if (!journalData.line2) journalData.line2 = {};
-                if (!journalData.line3) journalData.line3 = {};
-            } else {
-                journalData = { line1: {}, line2: {}, line3: {} };
-            }
-            console.log('Данные загружены из localStorage');
-        } else {
-            if (!gitHubDB.hasToken()) {
-                const tokenSet = await gitHubDB.requestToken();
-                if (!tokenSet) {
-                    throw new Error('GitHub token не предоставлен');
-                }
-            }
-            
-            await gitHubDB.testConnection();
-            journalData = await gitHubDB.loadData();
-            
-            if (!journalData.line1) journalData.line1 = {};
-            if (!journalData.line2) journalData.line2 = {};
-            if (!journalData.line3) journalData.line3 = {};
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        
-        if (!useLocalStorage) {
-            useLocalStorage = true;
-            updateStorageStatus();
-            showStatus('Ошибка облачного хранилища. Переключено на локальный режим.', 'error');
-            
-            const saved = localStorage.getItem('journalShnekaData');
-            journalData = saved ? JSON.parse(saved) : { line1: {}, line2: {}, line3: {} };
-        } else {
-            journalData = { line1: {}, line2: {}, line3: {} };
+        if (!gitHubDB.hasToken()) {
+            throw new Error('GitHub token не установлен');
         }
         
+        await gitHubDB.testConnection();
+        journalData = await gitHubDB.loadData();
+        
+        // Инициализация структуры если нужно
         if (!journalData.line1) journalData.line1 = {};
         if (!journalData.line2) journalData.line2 = {};
         if (!journalData.line3) journalData.line3 = {};
+        
+        console.log('Данные загружены из облака');
+        return true;
+    } catch (error) {
+        console.error('Ошибка загрузки данных из облака:', error);
+        
+        if (error.message.includes('401') || error.message.includes('403')) {
+            gitHubDB.clearToken();
+            showStatus('Неверный токен. Токен очищен. Перезагрузите страницу.', 'error');
+        } else {
+            showStatus('Ошибка загрузки из облака: ' + error.message, 'error');
+        }
+        
+        // Создаем пустые данные при ошибке
+        journalData = { line1: {}, line2: {}, line3: {} };
+        return false;
     }
 }
 
-// Загрузка данных для даты
-function loadData(date) {
-    const dateStr = formatDate(date);
+// Загрузка данных для текущей даты
+function loadDataForCurrentDate() {
+    const dateStr = formatDate(currentDate);
     
     document.querySelectorAll('.input-field').forEach(field => {
         const fieldId = field.getAttribute('data-id');
@@ -196,8 +183,8 @@ function loadData(date) {
     });
 }
 
-// Сохранение данных
-async function saveData() {
+// Сохранение данных в облако
+async function saveDataToCloud() {
     const dateStr = formatDate(currentDate);
     
     if (!journalData[currentLine]) journalData[currentLine] = {};
@@ -207,6 +194,7 @@ async function saveData() {
     let hasError = false;
     let hasNonZeroValue = false;
     
+    // Собираем данные из полей ввода
     document.querySelectorAll('.input-field').forEach(field => {
         const fieldId = field.getAttribute('data-id');
         const value = field.value.trim();
@@ -238,6 +226,7 @@ async function saveData() {
     
     if (hasError) return;
     
+    // Удаляем пустые записи
     if (!hasData || Object.keys(journalData[currentLine][dateStr]).length === 0 || !hasNonZeroValue) {
         delete journalData[currentLine][dateStr];
         showStatus(`Данные удалены за ${dateStr} для ${getCurrentLineName()}`, 'info');
@@ -245,30 +234,23 @@ async function saveData() {
         showStatus(`Данные сохранены за ${dateStr} для ${getCurrentLineName()}`, 'success');
     }
     
+    // Сохраняем в облако
     try {
-        if (useLocalStorage) {
-            localStorage.setItem('journalShnekaData', JSON.stringify(journalData));
-        } else {
-            await gitHubDB.saveData(journalData);
-        }
+        await gitHubDB.saveData(journalData);
         highlightDates();
+        showStatus('Данные успешно сохранены в облако', 'success');
     } catch (e) {
         if (e.message.includes('409')) {
-            // Конфликт версий - предлагаем решение
-            showStatus('Конфликт версий. ' + e.message + ' Попробуйте синхронизировать или пересоздать файл.', 'error');
+            // Конфликт версий - пытаемся решить
+            showStatus('Конфликт версий. Пытаемся решить...', 'warning');
             
-            // Автоматически пытаемся решить конфликт
-            setTimeout(async () => {
-                if (confirm('Обнаружен конфликт версий данных. Хотите автоматически решить конфликт?')) {
-                    try {
-                        await resolveDataConflict();
-                    } catch (resolveError) {
-                        showStatus('Не удалось автоматически решить конфликт: ' + resolveError.message, 'error');
-                    }
-                }
-            }, 1000);
+            try {
+                await resolveDataConflict();
+            } catch (resolveError) {
+                showStatus('Не удалось решить конфликт: ' + resolveError.message, 'error');
+            }
         } else {
-            showStatus('Ошибка сохранения данных: ' + e.message, 'error');
+            showStatus('Ошибка сохранения в облако: ' + e.message, 'error');
         }
         console.error('Ошибка сохранения:', e);
     }
@@ -288,10 +270,9 @@ async function resolveDataConflict() {
         // Сохраняем объединенные данные
         journalData = mergedData;
         await gitHubDB.saveData(journalData);
-        localStorage.setItem('journalShnekaData', JSON.stringify(journalData));
         
         // Перезагружаем данные
-        loadData(currentDate);
+        loadDataForCurrentDate();
         showStatus('Конфликт данных успешно разрешен!', 'success');
     } catch (error) {
         throw new Error('Не удалось разрешить конфликт: ' + error.message);
@@ -384,7 +365,7 @@ function setupInputValidation() {
         
         field.addEventListener('blur', function() {
             if (this.value && /^\d{1,2}\.\d$/.test(this.value)) {
-                saveData();
+                saveDataToCloud();
             }
         });
     });
@@ -396,107 +377,15 @@ function handleImageError() {
     showStatus('Фоновое изображение не загружено', 'warning');
 }
 
-// Экспорт данных
-function exportData() {
-    const dataStr = JSON.stringify(journalData, null, 2);
-    const dataBlob = new Blob([dataStr], {type: 'application/json'});
-    
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(dataBlob);
-    link.download = `journal_shneka_${formatDate(new Date())}.json`;
-    link.click();
-    
-    showStatus('Данные экспортированы в JSON', 'success');
-}
-
-// Переключение режима хранения
-async function toggleStorageMode() {
-    if (useLocalStorage) {
-        try {
-            if (!gitHubDB.hasToken()) {
-                const tokenSet = await gitHubDB.requestToken();
-                if (!tokenSet) {
-                    showStatus('GitHub token не предоставлен. Остаемся в локальном режиме.', 'error');
-                    return;
-                }
-            }
-            
-            await gitHubDB.testConnection();
-            useLocalStorage = false;
-            showStatus('Переключено на облачный режим. Загружаем данные...', 'info');
-            
-            await loadStorageData();
-            loadData(currentDate);
-            
-        } catch (error) {
-            showStatus('Ошибка переключения на облачный режим: ' + error.message, 'error');
-            console.error('Ошибка переключения:', error);
-            return;
-        }
-    } else {
-        useLocalStorage = true;
-        showStatus('Переключено на локальный режим', 'info');
-        await loadStorageData();
-        loadData(currentDate);
-    }
-    
-    updateStorageStatus();
-}
-
-// Обновление статуса хранилища
-function updateStorageStatus() {
-    const statusElement = document.getElementById('storage-status');
-    const buttonElement = document.getElementById('storage-btn');
-    
-    if (useLocalStorage) {
-        statusElement.textContent = '📱 Локальный режим';
-        statusElement.style.background = '#e3f2fd';
-        statusElement.style.color = '#1976d2';
-        buttonElement.textContent = '🌐 Облачный режим';
-        buttonElement.style.background = '#fd7e14';
-    } else {
-        statusElement.textContent = '☁️ Облачный режим';
-        statusElement.style.background = '#e8f5e8';
-        statusElement.style.color = '#2e7d32';
-        buttonElement.textContent = '📱 Локальный режим';
-        buttonElement.style.background = '#6c757d';
-    }
-}
-
 // Синхронизация из облака
 async function syncFromCloud() {
-    if (useLocalStorage) {
-        showStatus('Сначала переключитесь в облачный режим', 'warning');
-        return;
-    }
-    
     try {
-        const cloudData = await gitHubDB.loadData();
-        journalData = cloudData;
-        localStorage.setItem('journalShnekaData', JSON.stringify(journalData));
-        loadData(currentDate);
+        await loadDataFromCloud();
+        loadDataForCurrentDate();
+        highlightDates();
         showStatus('Данные синхронизированы из облака', 'success');
     } catch (error) {
         showStatus('Ошибка синхронизации: ' + error.message, 'error');
-    }
-}
-
-// Принудительное пересоздание файла данных (для исправления конфликтов)
-async function forceRecreateDataFile() {
-    if (useLocalStorage) {
-        showStatus('Сначала переключитесь в облачный режим', 'warning');
-        return;
-    }
-    
-    if (!confirm('ВНИМАНИЕ: Это действие перезапишет все облачные данные текущими локальными данными. Продолжить?')) {
-        return;
-    }
-    
-    try {
-        await gitHubDB.forceCreateNewFile(journalData);
-        showStatus('Файл данных успешно пересоздан в облаке', 'success');
-    } catch (error) {
-        showStatus('Ошибка пересоздания файла: ' + error.message, 'error');
     }
 }
 
@@ -527,11 +416,8 @@ function showStatus(message, type = 'info') {
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('login-btn').addEventListener('click', checkAuth);
-    document.getElementById('save-btn').addEventListener('click', saveData);
-    document.getElementById('export-btn').addEventListener('click', exportData);
+    document.getElementById('save-btn').addEventListener('click', saveDataToCloud);
     document.getElementById('sync-btn').addEventListener('click', syncFromCloud);
-    document.getElementById('force-recreate-btn').addEventListener('click', forceRecreateDataFile);
-    document.getElementById('storage-btn').addEventListener('click', toggleStorageMode);
     document.getElementById('background-img').addEventListener('error', handleImageError);
     
     document.getElementById('password').addEventListener('keypress', function(e) {
@@ -542,5 +428,5 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') checkAuth();
     });
     
-    showStatus('Загружаем приложение...', 'info');
+    showStatus('Ожидание авторизации...', 'info');
 });
