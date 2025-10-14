@@ -1,0 +1,485 @@
+/* Базовые стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Оверлей авторизации */
+#auth-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.auth-container {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.auth-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.auth-input:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s;
+}
+
+.auth-btn:hover {
+    background: #5a6fd8;
+}
+
+.auth-error {
+    color: #e74c3c;
+    margin-top: 10px;
+    display: none;
+}
+
+/* Основной контейнер */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Заголовок с информацией о пользователе */
+.user-header {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#user-role {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.logout-btn {
+    padding: 8px 16px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+/* Основной контент */
+.main-content {
+    display: flex;
+    gap: 30px;
+    margin-top: 100px;
+    height: calc(100vh - 140px);
+}
+
+/* Левая часть с изображением и полями ввода */
+.content-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.image-container {
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.background-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Контейнер для полей ввода поверх изображения */
+.input-fields-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+/* Выбор линии */
+.line-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+    z-index: 10;
+}
+
+.line-btn {
+    padding: 12px 24px;
+    background: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    flex: 1;
+    max-width: 150px;
+}
+
+.line-btn.active {
+    background: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.line-btn:hover:not(.active) {
+    background: #7f8c8d;
+}
+
+/* Поля ввода */
+.input-fields-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    flex: 1;
+    align-content: center;
+    z-index: 10;
+}
+
+.input-field {
+    padding: 15px;
+    border: 2px solid #dc3545;
+    border-radius: 8px;
+    font-size: 16px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.95);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.input-field:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+.input-field::placeholder {
+    color: #bdc3c7;
+    font-weight: normal;
+}
+
+.input-field[readonly] {
+    background: #ecf0f1;
+    border-color: #bdc3c7;
+    color: #7f8c8d;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Календарь справа */
+.calendar-sidebar {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.current-date {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+/* Стили для Flatpickr */
+.flatpickr-calendar {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 10px !important;
+    border: none !important;
+}
+
+.flatpickr-day.has-data {
+    background: #3498db !important;
+    color: white !important;
+    font-weight: bold;
+    border-radius: 50% !important;
+}
+
+.flatpickr-day.selected {
+    background: #e74c3c !important;
+    border-color: #e74c3c !important;
+}
+
+/* Панель управления */
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.save-btn, .sync-btn {
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.save-btn {
+    background: #28a745;
+    color: white;
+}
+
+.save-btn:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.save-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.sync-btn {
+    background: #17a2b8;
+    color: white;
+}
+
+.sync-btn:hover {
+    background: #138496;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
+/* Статус */
+#status {
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .main-content {
+        flex-direction: column;
+        margin-top: 120px;
+        height: auto;
+    }
+    
+    .calendar-sidebar {
+        width: 100%;
+        order: -1;
+    }
+    
+    .calendar-container {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .user-header {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        margin-bottom: 20px;
+        background: rgba(255, 255, 255, 0.98);
+    }
+    
+    .user-info {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .logout-btn {
+        width: 100%;
+    }
+    
+    .main-content {
+        margin-top: 0;
+    }
+    
+    .input-fields-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .line-selector {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .line-btn {
+        max-width: 200px;
+        width: 100%;
+    }
+    
+    .input-fields-overlay {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 20px;
+        margin: 20px;
+    }
+    
+    .input-fields-container {
+        grid-template-columns: 1fr;
+    }
+    
+    #user-role {
+        font-size: 14px;
+    }
+    
+    .calendar-sidebar {
+        width: 100%;
+    }
+}
+
+/* Темная тема */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+    
+    .auth-container, .calendar-container {
+        background: #2c3e50;
+        color: #ecf0f1;
+    }
+    
+    .user-header, .input-field {
+        background: #34495e;
+        color: #ecf0f1;
+    }
+    
+    .input-field[readonly] {
+        background: #2c3e50;
+        color: #bdc3c7;
+    }
+    
+    .auth-input {
+        background: #34495e;
+        border-color: #4a6572;
+        color: #ecf0f1;
+    }
+    
+    .auth-input::placeholder {
+        color: #95a5a6;
+    }
+    
+    .current-date {
+        background: #34495e;
+        color: #ecf0f1;
+    }
+    
+    #user-role {
+        color: #ecf0f1;
+    }
+    
+    .image-container {
+        background: #2c3e50;
+    }
+}
