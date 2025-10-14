@@ -1,13 +1,26 @@
 // script.js
 // Константы для авторизации
-const CORRECT_LOGIN = 'compound_VL';
-const CORRECT_PASSWORD = 'compound_VL';
+const USERS = {
+    admin: {
+        login: 'compound_VL',
+        password: 'compound_VL',
+        role: 'admin',
+        name: 'Администратор'
+    },
+    guest: {
+        login: 'guest',
+        password: 'guest',
+        role: 'guest',
+        name: 'Гость'
+    }
+};
 
 // Глобальные переменные
 let journalData = {};
 let currentDate = new Date();
 let calendar;
 let currentLine = 'line1';
+let currentUser = null;
 
 // Функция проверки авторизации
 function checkAuth() {
@@ -15,9 +28,20 @@ function checkAuth() {
     const password = document.getElementById('password').value;
     const errorElement = document.getElementById('auth-error');
     
-    if (login === CORRECT_LOGIN && password === CORRECT_PASSWORD) {
+    // Поиск пользователя
+    let user = null;
+    for (const key in USERS) {
+        if (USERS[key].login === login && USERS[key].password === password) {
+            user = USERS[key];
+            break;
+        }
+    }
+    
+    if (user) {
+        currentUser = user;
         document.getElementById('auth-overlay').style.display = 'none';
         document.querySelector('.container').style.display = 'block';
+        updateUIForUserRole();
         initApp();
     } else {
         errorElement.style.display = 'block';
@@ -25,10 +49,50 @@ function checkAuth() {
     }
 }
 
+// Обновление интерфейса в зависимости от роли
+function updateUIForUserRole() {
+    const userRoleElement = document.getElementById('user-role');
+    const saveBtn = document.getElementById('save-btn');
+    
+    if (userRoleElement) {
+        userRoleElement.textContent = `${currentUser.name} (${currentUser.role === 'admin' ? 'Администратор' : 'Только просмотр'})`;
+    }
+    
+    if (currentUser.role === 'guest') {
+        // Отключаем редактирование для гостя
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.6';
+        saveBtn.style.cursor = 'not-allowed';
+        
+        // Делаем поля ввода только для чтения
+        document.querySelectorAll('.input-field').forEach(field => {
+            field.readOnly = true;
+            field.style.background = '#f8f9fa';
+            field.style.cursor = 'not-allowed';
+        });
+        
+        // Меняем текст статуса
+        showStatus('Режим просмотра. Редактирование недоступно.', 'info');
+    } else {
+        // Администратор - полный доступ
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
+        saveBtn.style.cursor = 'pointer';
+        
+        document.querySelectorAll('.input-field').forEach(field => {
+            field.readOnly = false;
+            field.style.background = 'rgba(255, 255, 255, 0.95)';
+            field.style.cursor = 'text';
+        });
+        
+        showStatus('Режим администратора. Редактирование доступно.', 'success');
+    }
+}
+
 // Инициализация приложения
 async function initApp() {
-    // Запрашиваем токен при первом запуске
-    if (!gitHubDB.hasToken()) {
+    // Запрашиваем токен при первом запуске (только для админа)
+    if (currentUser.role === 'admin' && !gitHubDB.hasToken()) {
         const tokenSet = await gitHubDB.requestToken();
         if (!tokenSet) {
             showStatus('Для работы приложения требуется GitHub токен', 'error');
@@ -130,18 +194,22 @@ function hideSixthWeek() {
 // Обновление отображения даты
 function updateDateDisplay() {
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    document.getElementById('current-date-display').textContent = 
-        currentDate.toLocaleDateString('ru-RU', options);
+    const dateString = currentDate.toLocaleDateString('ru-RU', options);
+    document.getElementById('current-date-display').textContent = dateString;
+    document.getElementById('current-date-display-mobile').textContent = dateString;
 }
 
 // Загрузка данных из облака
 async function loadDataFromCloud() {
     try {
-        if (!gitHubDB.hasToken()) {
+        if (currentUser.role === 'admin' && !gitHubDB.hasToken()) {
             throw new Error('GitHub token не установлен');
         }
         
-        await gitHubDB.testConnection();
+        if (currentUser.role === 'admin') {
+            await gitHubDB.testConnection();
+        }
+        
         journalData = await gitHubDB.loadData();
         
         // Инициализация структуры если нужно
@@ -157,6 +225,9 @@ async function loadDataFromCloud() {
         if (error.message.includes('401') || error.message.includes('403')) {
             gitHubDB.clearToken();
             showStatus('Неверный токен. Токен очищен. Перезагрузите страницу.', 'error');
+        } else if (error.message.includes('GitHub token не установлен')) {
+            // Для гостя это не ошибка, используем кэшированные данные
+            console.log('Гость использует локальные данные');
         } else {
             showStatus('Ошибка загрузки из облака: ' + error.message, 'error');
         }
@@ -185,6 +256,11 @@ function loadDataForCurrentDate() {
 
 // Сохранение данных в облако
 async function saveDataToCloud() {
+    if (currentUser.role === 'guest') {
+        showStatus('Редактирование запрещено в режиме гостя', 'error');
+        return;
+    }
+    
     const dateStr = formatDate(currentDate);
     
     if (!journalData[currentLine]) journalData[currentLine] = {};
@@ -340,6 +416,11 @@ function formatDate(date) {
 function setupInputValidation() {
     document.querySelectorAll('.input-field').forEach(field => {
         field.addEventListener('input', function(e) {
+            if (currentUser.role === 'guest') {
+                e.preventDefault();
+                return;
+            }
+            
             let value = e.target.value;
             value = value.replace(/[^\d.]/g, '');
             
@@ -364,7 +445,7 @@ function setupInputValidation() {
         });
         
         field.addEventListener('blur', function() {
-            if (this.value && /^\d{1,2}\.\d$/.test(this.value)) {
+            if (currentUser.role === 'admin' && this.value && /^\d{1,2}\.\d$/.test(this.value)) {
                 saveDataToCloud();
             }
         });
@@ -413,11 +494,23 @@ function showStatus(message, type = 'info') {
     }
 }
 
+// Выход из системы
+function logout() {
+    currentUser = null;
+    document.querySelector('.container').style.display = 'none';
+    document.getElementById('auth-overlay').style.display = 'flex';
+    document.getElementById('login').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('auth-error').style.display = 'none';
+    showStatus('Ожидание авторизации...', 'info');
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('login-btn').addEventListener('click', checkAuth);
     document.getElementById('save-btn').addEventListener('click', saveDataToCloud);
     document.getElementById('sync-btn').addEventListener('click', syncFromCloud);
+    document.getElementById('logout-btn').addEventListener('click', logout);
     document.getElementById('background-img').addEventListener('error', handleImageError);
     
     document.getElementById('password').addEventListener('keypress', function(e) {
