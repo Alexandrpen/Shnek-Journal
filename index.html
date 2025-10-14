@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Журнал учета размеров шнека</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Оверлей авторизации -->
+    <div id="auth-overlay">
+        <div class="auth-container">
+            <h2>Авторизация</h2>
+            <input type="text" id="login" class="auth-input" placeholder="Логин" value="compound_VL">
+            <input type="password" id="password" class="auth-input" placeholder="Пароль" value="compound_VL">
+            <button class="auth-btn" id="login-btn">Войти</button>
+            <div id="auth-error" class="auth-error">Неверный логин или пароль!</div>
+        </div>
+    </div>
+
+    <!-- Основной контейнер -->
+    <div class="container" style="display: none;">
+        <img src="background.jpg" alt="Шаблон журнала шнека" class="background-image" id="background-img">
+        
+        <!-- Кнопки выбора линии -->
+        <div class="line-selector">
+            <button class="line-btn active" data-line="line1">Линия 1</button>
+            <button class="line-btn" data-line="line2">Линия 2</button>
+            <button class="line-btn" data-line="line3">Линия 3</button>
+        </div>
+        
+        <!-- Поля ввода -->
+        <input type="text" class="input-field" data-id="field1" placeholder="00.0">
+        <input type="text" class="input-field" data-id="field2" placeholder="00.0">
+        <input type="text" class="input-field" data-id="field3" placeholder="00.0">
+        <input type="text" class="input-field" data-id="field4" placeholder="00.0">
+        <input type="text" class="input-field" data-id="field5" placeholder="00.0">
+        <input type="text" class="input-field" data-id="field6" placeholder="00.0">
+        <input type="text" class="input-field" data-id="field7" placeholder="00.0">
+        <input type="text" class="input-field" data-id="field8" placeholder="00.0">
+        <input type="text" class="input-field" data-id="field9" placeholder="00.0">
+
+        <!-- Календарь -->
+        <div class="calendar-container">
+            <div class="current-date" id="current-date-display"></div>
+            <input type="text" id="calendar" readonly style="display: none;">
+            <div id="calendar-display"></div>
+        </div>
+        
+        <!-- Панель управления -->
+        <div class="controls">
+            <button class="save-btn" id="save-btn">Сохранить данные</button>
+            <button class="export-btn" id="export-btn">Экспорт в JSON</button>
+            <button class="sync-btn" id="sync-btn">Синхронизировать</button>
+            <button class="storage-btn" id="storage-btn">🌐 Облачный режим</button>
+            <span id="storage-status">📱 Локальный режим</span>
+            <span id="status">Готов к работе</span>
+        </div>
+    </div>
+
+    <!-- Подключение скриптов -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+    <script src="database.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
