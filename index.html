@@ -12,10 +12,6 @@
     <div id="auth-overlay">
         <div class="auth-container">
             <h2>Авторизация</h2>
-            <div class="auth-info">
-                <p><strong>Администратор:</strong> compound_VL / compound_VL</p>
-                <p><strong>Гость:</strong> guest / guest</p>
-            </div>
             <input type="text" id="login" class="auth-input" placeholder="Логин">
             <input type="password" id="password" class="auth-input" placeholder="Пароль">
             <button class="auth-btn" id="login-btn">Войти</button>
@@ -25,20 +21,6 @@
 
     <!-- Основной контейнер -->
     <div class="container" style="display: none;">
-        <!-- Заголовок с информацией о пользователе -->
-        <div class="user-header">
-            <div class="user-info">
-                <span id="user-role">Не авторизован</span>
-                <button class="logout-btn" id="logout-btn">Выйти</button>
-            </div>
-        </div>
-
-        <!-- Мобильный заголовок -->
-        <div class="mobile-header">
-            <h1>Журнал шнека</h1>
-            <div class="current-date-mobile" id="current-date-display-mobile"></div>
-        </div>
-
         <img src="background.jpg" alt="Шаблон журнала шнека" class="background-image" id="background-img">
         
         <!-- Кнопки выбора линии -->
@@ -48,7 +30,7 @@
             <button class="line-btn" data-line="line3">Линия 3</button>
         </div>
         
-        <!-- Контейнер для полей ввода -->
+        <!-- Контейнер для полей ввода (для мобильной адаптации) -->
         <div class="input-fields-container">
             <input type="text" class="input-field" data-id="field1" placeholder="00.0">
             <input type="text" class="input-field" data-id="field2" placeholder="00.0">
