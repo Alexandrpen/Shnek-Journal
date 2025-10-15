@@ -230,6 +230,7 @@ body {
     font-size: 14px;
     text-align: center;
     background: rgba(255, 255, 255, 0.95);
+    colour: #000000;
     transition: all 0.3s ease;
     font-weight: 500;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -237,7 +238,12 @@ body {
     height: 40px;
     z-index: 5;
 }
-
+@media (prefers-color-scheme: dark) {
+    .input-field {
+        background: #34495e;
+        color: #ecf0f1; /* Цвет текста для темной темы */
+    }
+}
 .input-field:focus {
     border-color: #28a745;
     box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.1);
