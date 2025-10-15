@@ -285,41 +285,41 @@ body {
 /* Поле 4 - Центр левый */
 .field-pos-4 {
     top: 45%;
-    left: 15%;
-    transform: translateY(-50%);
+    left: 35%;
+    
 }
 
 /* Поле 5 - Центр */
 .field-pos-5 {
     top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    left: 45%;
+   
 }
 
 /* Поле 6 - Центр правый */
 .field-pos-6 {
     top: 45%;
-    right: 15%;
-    transform: translateY(-50%);
+    right: 55%;
+   
 }
 
 /* Поле 7 - Нижний левый угол */
 .field-pos-7 {
     bottom: 45%;
-    left: 15%;
+    left: 65%;
 }
 
 /* Поле 8 - Нижний центр */
 .field-pos-8 {
     bottom: 45%;
-    left: 45%;
-    transform: translateX(-50%);
+    left: 75%;
+   
 }
 
 /* Поле 9 - Нижний правый угол */
 .field-pos-9 {
     bottom: 45%;
-    right: 15%;
+     left: 85%;
 }
 
 /* ===== КАЛЕНДАРЬ СПРАВА ===== */
