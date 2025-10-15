@@ -252,7 +252,7 @@ body {
 }
 
 .input-field::placeholder {
-    color: #bdc3c7;
+    color: #000000;
     font-weight: normal;
     font-size: 12px;
 }
