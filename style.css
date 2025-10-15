@@ -230,7 +230,7 @@ body {
     font-size: 14px;
     text-align: center;
     background: rgba(255, 255, 255, 0.95);
-    color: #000000;
+    color: #000000 !important;
     transition: all 0.3s ease;
     font-weight: 500;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -260,7 +260,7 @@ body {
 .input-field[readonly] {
     background: #ecf0f1;
     border-color: #bdc3c7;
-    color: #7f8c8d;
+    color: #000000 !important;
     cursor: not-allowed;
     opacity: 0.7;
     transform: none;
@@ -438,7 +438,7 @@ body {
     
     .auth-container, .calendar-container {
         background: #2c3e50;
-        color: #ecf0f1;
+      
     }
     
     .user-header, .input-field {
@@ -448,7 +448,7 @@ body {
     
     .input-field[readonly] {
         background: #2c3e50;
-        color: #000000;
+        color: #000000 !important;
     }
     
     .auth-input {
