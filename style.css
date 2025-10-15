@@ -448,7 +448,7 @@ body {
     
     .input-field[readonly] {
         background: #2c3e50;
-        color: #bdc3c7;
+        color: #000000;
     }
     
     .auth-input {
