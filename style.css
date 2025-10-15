@@ -241,7 +241,7 @@ body {
 @media (prefers-color-scheme: dark) {
     .input-field {
         background: #34495e;
-        color: #ecf0f1; /* Цвет текста для темной темы */
+        color: #000000; /* Цвет текста для темной темы */
     }
 }
 .input-field:focus {
