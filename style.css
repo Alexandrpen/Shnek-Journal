@@ -1,7 +1,7 @@
 /* 
  * Основные стили журнала учета размеров шнека
  * Только для ПК версии - мобильная адаптация удалена
- * Поля ввода уменьшены и расположены в один ряд
+ * Поля ввода имеют независимое позиционирование
  */
 
 /* ===== БАЗОВЫЕ СТИЛИ ===== */
@@ -214,20 +214,16 @@ body {
     background: #7f8c8d;
 }
 
-/* ===== ПОЛЯ ВВОДА РАЗМЕРОВ - ОДИН РЯД ===== */
-.input-fields-container.single-row {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+/* ===== ОСНОВНЫЕ СТИЛИ ДЛЯ ПОЛЕЙ ВВОДА ===== */
+.input-fields-container {
+    position: relative;
     width: 100%;
-    height: 60px;
-    gap: 8px;
-    padding: 0 10px;
+    height: 100%;
 }
 
-/* Уменьшенные поля ввода для одного ряда */
+/* Общие стили для всех полей ввода */
 .input-field {
+    position: absolute;
     padding: 8px 10px;
     border: 2px solid #dc3545;
     border-radius: 6px;
@@ -237,9 +233,9 @@ body {
     transition: all 0.3s ease;
     font-weight: 500;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 80px;
+    width: 80px;
     height: 40px;
+    z-index: 5;
 }
 
 .input-field:focus {
@@ -263,6 +259,67 @@ body {
     opacity: 0.7;
     transform: none;
     box-shadow: none;
+}
+
+/* ===== НЕЗАВИСИМОЕ ПОЗИЦИОНИРОВАНИЕ КАЖДОГО ПОЛЯ ===== */
+
+/* Поле 1 - Верхний левый угол */
+.field-pos-1 {
+    top: 25%;
+    left: 15%;
+}
+
+/* Поле 2 - Верхний центр */
+.field-pos-2 {
+    top: 25%;
+    left: 45%;
+    transform: translateX(-50%);
+}
+
+/* Поле 3 - Верхний правый угол */
+.field-pos-3 {
+    top: 25%;
+    right: 15%;
+}
+
+/* Поле 4 - Центр левый */
+.field-pos-4 {
+    top: 50%;
+    left: 15%;
+    transform: translateY(-50%);
+}
+
+/* Поле 5 - Центр */
+.field-pos-5 {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Поле 6 - Центр правый */
+.field-pos-6 {
+    top: 50%;
+    right: 15%;
+    transform: translateY(-50%);
+}
+
+/* Поле 7 - Нижний левый угол */
+.field-pos-7 {
+    bottom: 25%;
+    left: 15%;
+}
+
+/* Поле 8 - Нижний центр */
+.field-pos-8 {
+    bottom: 25%;
+    left: 45%;
+    transform: translateX(-50%);
+}
+
+/* Поле 9 - Нижний правый угол */
+.field-pos-9 {
+    bottom: 25%;
+    right: 15%;
 }
 
 /* ===== КАЛЕНДАРЬ СПРАВА ===== */
