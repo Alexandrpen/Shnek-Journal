@@ -188,7 +188,7 @@ async function initApp() {
     }
 }
 
-// Функция для динамического масштабирования
+// Функция для динамического масштабирования полей и их позиционирования
 function setupResponsiveScaling() {
     function updateScale() {
         const container = document.querySelector('.image-container');
@@ -202,13 +202,24 @@ function setupResponsiveScaling() {
         // Применяем масштабирование только если контейнер меньше базового размера
         if (scaleFactor < 1) {
             inputs.forEach(input => {
-                const currentTransform = input.style.transform || 'scale(1)';
-                // Учитываем увеличенные размеры полей
-                input.style.transform = `scale(${scaleFactor})`;
+                // Масштабируем размеры полей
+                const currentWidth = 131; // Базовая ширина
+                const currentHeight = 74; // Базовая высота
+                const currentFontSize = 22; // Базовый размер шрифта
+                
+                input.style.width = `${currentWidth * scaleFactor}px`;
+                input.style.height = `${currentHeight * scaleFactor}px`;
+                input.style.fontSize = `${currentFontSize * scaleFactor}px`;
+                input.style.padding = `${12 * scaleFactor}px ${14 * scaleFactor}px`;
             });
         } else {
+            // Возвращаем базовые размеры для больших экранов
             inputs.forEach(input => {
-                input.style.transform = 'scale(1)';
+                input.style.width = '131px';
+                input.style.height = '74px';
+                input.style.fontSize = '22px';
+                input.style.padding = '12px 14px';
+                input.style.transform = 'none';
             });
         }
     }
