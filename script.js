@@ -47,15 +47,70 @@ function checkAuth() {
     // Обработка результата авторизации
     if (user) {
         currentUser = user;
+        
+        // Сохраняем данные пользователя в localStorage
+        saveUserSession(user);
+        
         document.getElementById('auth-overlay').style.display = 'none'; // Скрытие формы авторизации
         document.querySelector('.container').style.display = 'block'; // Показ основного интерфейса
         updateUIForUserRole(); // Обновление интерфейса согласно роли
         initApp(); // Инициализация приложения
         errorElement.style.display = 'none'; // Скрытие сообщения об ошибке
+        
+        showStatus(`✅ Авторизация успешна. Добро пожаловать, ${user.name}!`, 'success');
     } else {
         errorElement.style.display = 'block'; // Показ сообщения об ошибке
         document.getElementById('password').value = ''; // Очистка поля пароля
-        showStatus('Ошибка авторизации', 'error');
+        showStatus('❌ Ошибка авторизации', 'error');
+    }
+}
+
+// Функция сохранения сессии пользователя
+function saveUserSession(user) {
+    const sessionData = {
+        user: user,
+        timestamp: new Date().getTime(),
+        expiresIn: 24 * 60 * 60 * 1000 // 24 часа
+    };
+    localStorage.setItem('shnekJournalSession', JSON.stringify(sessionData));
+    console.log('Сессия пользователя сохранена');
+}
+
+// Функция проверки и восстановления сессии
+function checkAndRestoreSession() {
+    try {
+        const sessionData = localStorage.getItem('shnekJournalSession');
+        
+        if (!sessionData) {
+            return false;
+        }
+        
+        const session = JSON.parse(sessionData);
+        const now = new Date().getTime();
+        
+        // Проверяем не истекла ли сессия
+        if (now - session.timestamp > session.expiresIn) {
+            localStorage.removeItem('shnekJournalSession');
+            console.log('Сессия истекла');
+            return false;
+        }
+        
+        // Восстанавливаем пользователя
+        currentUser = session.user;
+        
+        // Скрываем форму авторизации и показываем основной интерфейс
+        document.getElementById('auth-overlay').style.display = 'none';
+        document.querySelector('.container').style.display = 'block';
+        updateUIForUserRole();
+        initApp();
+        
+        showStatus(`🔓 Сессия восстановлена. Добро пожаловать, ${session.user.name}!`, 'success');
+        return true;
+        
+    } catch (error) {
+        console.error('Ошибка восстановления сессии:', error);
+        localStorage.removeItem('shnekJournalSession');
+        return false;
     }
 }
 
@@ -107,6 +162,9 @@ async function initApp() {
     try {
         cleanupPreviousState(); // Очистка предыдущего состояния
         
+        // Настройка адаптивного масштабирования
+        setupResponsiveScaling();
+        
         // Запрос токена GitHub для администратора (если не установлен)
         if (currentUser.role === 'admin' && !gitHubDB.hasToken()) {
             const tokenSet = await gitHubDB.requestToken();
@@ -128,6 +186,35 @@ async function initApp() {
         console.error('Ошибка инициализации:', error);
         showStatus('❌ Ошибка инициализации: ' + error.message, 'error');
     }
+}
+
+// Функция для динамического масштабирования
+function setupResponsiveScaling() {
+    function updateScale() {
+        const container = document.querySelector('.image-container');
+        const inputs = document.querySelectorAll('.input-field');
+        const containerWidth = container.offsetWidth;
+        
+        // Базовые размеры для reference (для экрана 1920px)
+        const baseWidth = 1920;
+        const scaleFactor = containerWidth / baseWidth;
+        
+        // Применяем масштабирование только если контейнер меньше базового размера
+        if (scaleFactor < 1) {
+            inputs.forEach(input => {
+                const currentTransform = input.style.transform || 'scale(1)';
+                input.style.transform = `scale(${scaleFactor})`;
+            });
+        } else {
+            inputs.forEach(input => {
+                input.style.transform = 'scale(1)';
+            });
+        }
+    }
+    
+    // Вызываем при загрузке и при изменении размера окна
+    updateScale();
+    window.addEventListener('resize', updateScale);
 }
 
 // Очистка предыдущего состояния приложения
@@ -163,16 +250,43 @@ function cleanupPreviousState() {
 function setupLineButtons() {
     const lineButtons = document.querySelectorAll('.line-btn');
     lineButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
             // Снятие активности со всех кнопок
             lineButtons.forEach(b => b.classList.remove('active'));
             // Установка активности на текущую кнопку
             this.classList.add('active');
             currentLine = this.getAttribute('data-line'); // Обновление текущей линии
-            loadDataForCurrentDate(); // Загрузка данных для выбранной линии
+            
+            // Автоматическая синхронизация при переключении линии
+            await autoSyncOnLineChange();
+            
             showStatus(`🔄 Переключено на ${this.textContent}`, 'info');
         });
     });
+}
+
+// Функция автоматической синхронизации при смене линии
+async function autoSyncOnLineChange() {
+    try {
+        showStatus('🔄 Автоматическая синхронизация...', 'info');
+        
+        // Загружаем свежие данные из облака
+        await loadDataFromCloud();
+        
+        // Обновляем данные для текущей даты
+        loadDataForCurrentDate();
+        
+        // Обновляем подсветку календаря
+        highlightDates();
+        
+        showStatus(`✅ Данные для ${getCurrentLineName()} синхронизированы`, 'success');
+    } catch (error) {
+        console.error('Ошибка автоматической синхронизации:', error);
+        showStatus('⚠️ Автосинхронизация не удалась, используем локальные данные', 'warning');
+        
+        // Все равно загружаем локальные данные
+        loadDataForCurrentDate();
+    }
 }
 
 // Получение отображаемого имени текущей линии
@@ -602,6 +716,10 @@ function showStatus(message, type = 'info') {
 // Выход из системы
 function logout() {
     currentUser = null; // Сброс текущего пользователя
+    
+    // Очищаем сессию
+    localStorage.removeItem('shnekJournalSession');
+    
     document.querySelector('.container').style.display = 'none'; // Скрытие основного интерфейса
     document.getElementById('auth-overlay').style.display = 'flex'; // Показ формы авторизации
     document.getElementById('login').value = ''; // Очистка поля логина
@@ -621,22 +739,25 @@ function logout() {
 
 // Установка обработчиков событий при загрузке DOM
 document.addEventListener('DOMContentLoaded', function() {
-    // Привязка обработчиков к кнопкам
-    document.getElementById('login-btn').addEventListener('click', checkAuth);
+    // Сначала пытаемся восстановить сессию
+    const sessionRestored = checkAndRestoreSession();
+    
+    if (!sessionRestored) {
+        // Если сессия не восстановлена, показываем форму авторизации
+        document.getElementById('login-btn').addEventListener('click', checkAuth);
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkAuth();
+        });
+        document.getElementById('login').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkAuth();
+        });
+        
+        showStatus('⏳ Ожидание авторизации...', 'info');
+    }
+    
+    // Общие обработчики (работают всегда)
     document.getElementById('save-btn').addEventListener('click', saveDataToCloud);
     document.getElementById('sync-btn').addEventListener('click', syncFromCloud);
     document.getElementById('logout-btn').addEventListener('click', logout);
     document.getElementById('background-img').addEventListener('error', handleImageError);
-    
-    // Обработка нажатия Enter в полях авторизации
-    document.getElementById('password').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') checkAuth();
-    });
-    
-    document.getElementById('login').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') checkAuth();
-    });
-    
-    // Показ начального статуса
-    showStatus('⏳ Ожидание авторизации...', 'info');
 });
