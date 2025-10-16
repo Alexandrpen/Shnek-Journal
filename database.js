@@ -14,6 +14,9 @@ class GitHubDatabase {
         this.branch = 'main'; // Ветка репозитория по умолчанию
         this.token = null; // Токен авторизации (устанавливается позже)
         this.dataFile = 'journal-data.json'; // Файл для хранения данных
+        this.cache = null;
+        this.lastSync = null;
+        this.CACHE_DURATION = 5 * 60 * 1000; // 5 минут
     }
 
     // ===== МЕТОДЫ РАБОТЫ С ТОКЕНОМ =====
@@ -108,6 +111,13 @@ class GitHubDatabase {
 
     // Загрузка данных из репозитория с повторными попытками
     async loadData() {
+        // Проверяем кэш
+        if (this.cache && this.lastSync && 
+            (Date.now() - this.lastSync) < this.CACHE_DURATION) {
+            console.log('Используем кэшированные данные');
+            return this.cache;
+        }
+        
         if (!this.hasToken()) {
             throw new Error('GitHub token не установлен');
         }
@@ -130,7 +140,10 @@ class GitHubDatabase {
                 // Обработка случая когда файл не существует
                 if (response.status === 404) {
                     console.log('Файл данных не найден, создаем новый');
-                    return { line1: {}, line2: {}, line3: {} }; // Пустая структура
+                    const emptyData = { line1: {}, line2: {}, line3: {} };
+                    this.cache = emptyData;
+                    this.lastSync = Date.now();
+                    return emptyData; // Пустая структура
                 }
 
                 // Обработка ошибок HTTP
@@ -152,6 +165,10 @@ class GitHubDatabase {
                 const data = await response.json();
                 const content = this.decodeBase64(data.content); // Декодирование base64
                 const journalData = JSON.parse(content); // Парсинг JSON
+                
+                // Сохраняем в кэш
+                this.cache = journalData;
+                this.lastSync = Date.now();
                 
                 console.log('Данные загружены из GitHub');
                 return journalData;
@@ -254,6 +271,10 @@ class GitHubDatabase {
                     throw new Error(`Ошибка сохранения: ${response.status} - ${errorData.message || response.statusText}`);
                 }
 
+                // Обновляем кэш
+                this.cache = journalData;
+                this.lastSync = Date.now();
+                
                 console.log('Данные успешно сохранены в GitHub');
                 return true;
             } catch (error) {
@@ -289,6 +310,12 @@ class GitHubDatabase {
     // Декодирование из base64
     decodeBase64(str) {
         return decodeURIComponent(escape(atob(str)));
+    }
+    
+    // Принудительная очистка кэша
+    clearCache() {
+        this.cache = null;
+        this.lastSync = null;
     }
 }
 
