@@ -161,6 +161,7 @@ body {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
 }
 
 .background-image {
@@ -238,12 +239,7 @@ body {
     height: 40px;
     z-index: 5;
 }
-@media (prefers-color-scheme: dark) {
-    .input-field {
-        background: #34495e;
-        color: #000000; /* Цвет текста для темной темы */
-    }
-}
+
 .input-field:focus {
     border-color: #28a745;
     box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.1);
@@ -252,7 +248,7 @@ body {
 }
 
 .input-field::placeholder {
-    color: #000000;
+    color: #000000 !important;
     font-weight: normal;
     font-size: 12px;
 }
@@ -430,6 +426,109 @@ body {
     transition: all 0.3s ease;
 }
 
+/* ===== АДАПТАЦИЯ ДЛЯ РАЗНЫХ ПК ЭКРАНОВ ===== */
+
+@media (max-width: 1600px) {
+    .container {
+        max-width: 1200px;
+    }
+    
+    .input-field {
+        width: 65px;
+        height: 38px;
+        font-size: 13px;
+    }
+    
+    .field-pos-1 { left: 6%; }
+    .field-pos-2 { left: 16%; }
+    .field-pos-3 { left: 25%; }
+    .field-pos-4 { left: 34%; }
+    .field-pos-5 { left: 43.5%; }
+    .field-pos-6 { left: 53%; }
+    .field-pos-7 { left: 62.6%; }
+    .field-pos-8 { left: 71.7%; }
+    .field-pos-9 { left: 80.8%; }
+}
+
+@media (max-width: 1400px) {
+    .container {
+        max-width: 1100px;
+    }
+    
+    .input-field {
+        width: 60px;
+        height: 35px;
+        font-size: 12px;
+    }
+    
+    .field-pos-1 { left: 5.5%; }
+    .field-pos-2 { left: 15.5%; }
+    .field-pos-3 { left: 24.5%; }
+    .field-pos-4 { left: 33.5%; }
+    .field-pos-5 { left: 43%; }
+    .field-pos-6 { left: 52.5%; }
+    .field-pos-7 { left: 62%; }
+    .field-pos-8 { left: 71%; }
+    .field-pos-9 { left: 80%; }
+}
+
+@media (max-width: 1200px) {
+    .container {
+        max-width: 1000px;
+    }
+    
+    .input-field {
+        width: 55px;
+        height: 32px;
+        font-size: 11px;
+    }
+    
+    .field-pos-1 { left: 5%; }
+    .field-pos-2 { left: 15%; }
+    .field-pos-3 { left: 24%; }
+    .field-pos-4 { left: 33%; }
+    .field-pos-5 { left: 42.5%; }
+    .field-pos-6 { left: 52%; }
+    .field-pos-7 { left: 61.5%; }
+    .field-pos-8 { left: 70.5%; }
+    .field-pos-9 { left: 79.5%; }
+    
+    .calendar-sidebar {
+        width: 320px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .container {
+        max-width: 900px;
+    }
+    
+    .input-field {
+        width: 50px;
+        height: 30px;
+        font-size: 10px;
+    }
+    
+    .field-pos-1 { left: 4.5%; }
+    .field-pos-2 { left: 14.5%; }
+    .field-pos-3 { left: 23.5%; }
+    .field-pos-4 { left: 32.5%; }
+    .field-pos-5 { left: 42%; }
+    .field-pos-6 { left: 51.5%; }
+    .field-pos-7 { left: 61%; }
+    .field-pos-8 { left: 70%; }
+    .field-pos-9 { left: 79%; }
+    
+    .calendar-sidebar {
+        width: 300px;
+    }
+    
+    .line-btn {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}
+
 /* ===== ТЕМНАЯ ТЕМА (СИСТЕМНЫЕ ПРЕДПОЧТЕНИЯ) ===== */
 @media (prefers-color-scheme: dark) {
     body {
@@ -438,12 +537,11 @@ body {
     
     .auth-container, .calendar-container {
         background: #2c3e50;
-      
+        color: #ecf0f1;
     }
     
     .user-header, .input-field {
         background: #34495e;
-        color: #ecf0f1;
     }
     
     .input-field[readonly] {
