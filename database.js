@@ -80,24 +80,36 @@ class GitHubDatabase {
 
     // Проверка подключения к репозиторию
     async testConnection() {
+        // Для гостя проверяем подключение без токена (только для публичных репозиториев)
         if (!this.hasToken()) {
-            throw new Error('GitHub token не установлен');
+            console.log('Проверка подключения к публичному репозиторию без токена');
         }
 
         try {
+            const headers = {
+                'Accept': 'application/vnd.github.v3+json'
+            };
+
+            // Добавляем токен если есть
+            if (this.hasToken()) {
+                headers['Authorization'] = `token ${this.getToken()}`;
+            }
+
             // Запрос информации о репозитории
             const response = await fetch(
                 `https://api.github.com/repos/${this.owner}/${this.repo}`,
-                {
-                    headers: {
-                        'Authorization': `token ${this.getToken()}`, // Авторизация
-                        'Accept': 'application/vnd.github.v3+json' // Формат ответа
-                    }
-                }
+                { headers }
             );
 
             // Проверка статуса ответа
             if (!response.ok) {
+                // Для публичного репозитория может быть 404 если репозиторий не существует
+                // или 403 если репозиторий приватный и нет токена
+                if (response.status === 404) {
+                    throw new Error('Репозиторий не найден');
+                } else if (response.status === 403 && !this.hasToken()) {
+                    throw new Error('Доступ запрещен. Репозиторий приватный, требуется токен.');
+                }
                 throw new Error(`Ошибка подключения: ${response.status}`);
             }
 
@@ -117,24 +129,24 @@ class GitHubDatabase {
             console.log('Используем кэшированные данные');
             return this.cache;
         }
-        
-        if (!this.hasToken()) {
-            throw new Error('GitHub token не установлен');
-        }
 
         let retries = 3; // Количество попыток при конфликтах
         
         while (retries > 0) {
             try {
+                const headers = {
+                    'Accept': 'application/vnd.github.v3+json'
+                };
+
+                // Добавляем токен если есть
+                if (this.hasToken()) {
+                    headers['Authorization'] = `token ${this.getToken()}`;
+                }
+
                 // Запрос содержимого файла данных
                 const response = await fetch(
                     `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.dataFile}`,
-                    {
-                        headers: {
-                            'Authorization': `token ${this.getToken()}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    }
+                    { headers }
                 );
 
                 // Обработка случая когда файл не существует
@@ -149,6 +161,11 @@ class GitHubDatabase {
                 // Обработка ошибок HTTP
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
+                    
+                    // Обработка случая когда репозиторий приватный и нет токена
+                    if (response.status === 403 && !this.hasToken()) {
+                        throw new Error('Доступ запрещен. Репозиторий приватный, требуется токен.');
+                    }
                     
                     // Повторная попытка при конфликте версий (409)
                     if (response.status === 409 && retries > 1) {
@@ -183,8 +200,8 @@ class GitHubDatabase {
                 
                 console.error('Ошибка загрузки данных:', error);
                 
-                // Очистка токена при ошибках авторизации
-                if (error.message.includes('401') || error.message.includes('403')) {
+                // Очистка токена при ошибках авторизации (только если токен был)
+                if (this.hasToken() && (error.message.includes('401') || error.message.includes('403'))) {
                     this.clearToken();
                     throw new Error('Неверный токен. Токен очищен. Введите новый токен.');
                 }
@@ -196,8 +213,9 @@ class GitHubDatabase {
 
     // Сохранение данных в репозиторий с обработкой конфликтов
     async saveData(journalData) {
+        // Для гостя сохранение запрещено
         if (!this.hasToken()) {
-            throw new Error('GitHub token не установлен');
+            throw new Error('Сохранение запрещено. Требуется авторизация с токеном GitHub.');
         }
 
         let retries = 3; // Количество попыток при конфликтах
