@@ -1,0 +1,602 @@
+/* 
+ * Основные стили журнала учета размеров шнека
+ * Только для ПК версии - мобильная адаптация удалена
+ * Поля ввода имеют независимое позиционирование
+ */
+
+/* ===== БАЗОВЫЕ СТИЛИ ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* ===== ОВЕРЛЕЙ АВТОРИЗАЦИИ ===== */
+#auth-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.auth-container {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.auth-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.auth-input:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s;
+}
+
+.auth-btn:hover {
+    background: #5a6fd8;
+}
+
+.auth-error {
+    color: #e74c3c;
+    margin-top: 10px;
+    display: none;
+}
+
+/* ===== ОСНОВНОЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ ===== */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* ===== ЗАГОЛОВОК С ИНФОРМАЦИЕЙ О ПОЛЬЗОВАТЕЛЕ ===== */
+.user-header {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#user-role {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.logout-btn {
+    padding: 8px 16px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+/* ===== ОСНОВНОЙ КОНТЕНТ ===== */
+.main-content {
+    display: flex;
+    gap: 30px;
+    margin-top: 100px;
+    height: calc(100vh - 140px);
+}
+
+/* ===== ЛЕВАЯ ЧАСТЬ С ИЗОБРАЖЕНИЕМ И ПОЛЯМИ ВВОДА ===== */
+.content-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.image-container {
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.background-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* ===== КОНТЕЙНЕР ДЛЯ ПОЛЕЙ ВВОДА ПОВЕРХ ИЗОБРАЖЕНИЯ ===== */
+.input-fields-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+/* ===== ВЫБОР ПРОИЗВОДСТВЕННОЙ ЛИНИИ ===== */
+.line-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+    z-index: 10;
+}
+
+.line-btn {
+    padding: 12px 24px;
+    background: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    flex: 1;
+    max-width: 150px;
+}
+
+.line-btn.active {
+    background: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.line-btn:hover:not(.active) {
+    background: #7f8c8d;
+}
+
+/* ===== ОСНОВНЫЕ СТИЛИ ДЛЯ ПОЛЕЙ ВВОДА ===== */
+.input-fields-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Общие стили для всех полей ввода */
+.input-field {
+    position: absolute;
+    padding: 12px 14px;
+    border: 2px solid #dc3545;
+    border-radius: 6px;
+    font-size: 22px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.95);
+    color: #000000 !important;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    width: 131px;
+    height: 74px;
+    z-index: 5;
+}
+
+.input-field:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.1);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.input-field::placeholder {
+    color: #000000 !important;
+    font-weight: normal;
+    font-size: 19px;
+}
+
+.input-field[readonly] {
+    background: #ecf0f1;
+    border-color: #bdc3c7;
+    color: #000000 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ===== БАЗОВЫЕ ПОЗИЦИИ (оптимизированы для 3440x1440) ===== */
+
+/* Все поля находятся в одном ряду на высоте 45% */
+.field-pos-1 {
+    top: 45%;
+    left: 7%;
+}
+
+.field-pos-2 {
+    top: 45%;
+    left: 16%;
+}
+
+.field-pos-3 {
+    top: 45%;
+    left: 26%;
+}
+
+.field-pos-4 {
+    top: 45%;
+    left: 35%;
+}
+
+.field-pos-5 {
+    top: 45%;
+    left: 45%;
+}
+
+.field-pos-6 {
+    top: 45%;
+    left: 54%;
+}
+
+.field-pos-7 {
+    top: 45%;
+    left: 63%;
+}
+
+.field-pos-8 {
+    top: 45%;
+    left: 73%;
+}
+
+.field-pos-9 {
+    top: 45%;
+    left: 82%;
+}
+
+/* ===== КАЛЕНДАРЬ СПРАВА ===== */
+.calendar-sidebar {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.current-date {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+/* ===== СТИЛИ ДЛЯ FLATPICKR (КАЛЕНДАРЬ) ===== */
+.flatpickr-calendar {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 10px !important;
+    border: none !important;
+}
+
+.flatpickr-day.has-data {
+    background: #3498db !important;
+    color: white !important;
+    font-weight: bold;
+    border-radius: 50% !important;
+}
+
+.flatpickr-day.selected {
+    background: #e74c3c !important;
+    border-color: #e74c3c !important;
+}
+
+/* ===== ПАНЕЛЬ УПРАВЛЕНИЯ ===== */
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.save-btn, .sync-btn {
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.save-btn {
+    background: #28a745;
+    color: white;
+}
+
+.save-btn:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.save-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.sync-btn {
+    background: #17a2b8;
+    color: white;
+}
+
+.sync-btn:hover {
+    background: #138496;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
+/* ===== ПАНЕЛЬ СТАТУСА ===== */
+#status {
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+/* ===== АДАПТАЦИЯ ДЛЯ РАЗНЫХ ПК ЭКРАНОВ ===== */
+
+/* Для экранов 2560x1440 и аналогичных */
+@media (max-width: 2560px) {
+    .container {
+        max-width: 1200px;
+    }
+    
+    .input-field {
+        width: 122px;
+        height: 71px;
+        font-size: 20px;
+        padding: 11px 13px;
+    }
+    
+    /* Позиционирование с учетом уменьшенных размеров */
+    .field-pos-1 { left: 6.5%; top: 45%; }
+    .field-pos-2 { left: 15.5%; top: 45%; }
+    .field-pos-3 { left: 25.5%; top: 45%; }
+    .field-pos-4 { left: 34.5%; top: 45%; }
+    .field-pos-5 { left: 44.5%; top: 45%; }
+    .field-pos-6 { left: 53.5%; top: 45%; }
+    .field-pos-7 { left: 62.5%; top: 45%; }
+    .field-pos-8 { left: 72.5%; top: 45%; }
+    .field-pos-9 { left: 81.5%; top: 45%; }
+}
+
+/* Для экранов 1920x1080 и аналогичных */
+@media (max-width: 1920px) {
+    .container {
+        max-width: 1100px;
+    }
+    
+    .input-field {
+        width: 113px;
+        height: 66px;
+        font-size: 19px;
+        padding: 10px 12px;
+    }
+    
+    /* Позиционирование с учетом уменьшенных размеров */
+    .field-pos-1 { left: 6%; top: 45%; }
+    .field-pos-2 { left: 15%; top: 45%; }
+    .field-pos-3 { left: 25%; top: 45%; }
+    .field-pos-4 { left: 34%; top: 45%; }
+    .field-pos-5 { left: 44%; top: 45%; }
+    .field-pos-6 { left: 53%; top: 45%; }
+    .field-pos-7 { left: 62%; top: 45%; }
+    .field-pos-8 { left: 72%; top: 45%; }
+    .field-pos-9 { left: 81%; top: 45%; }
+}
+
+/* Для экранов 1600x900 и аналогичных */
+@media (max-width: 1600px) {
+    .container {
+        max-width: 1000px;
+    }
+    
+    .input-field {
+        width: 103px;
+        height: 60px;
+        font-size: 17px;
+        padding: 9px 11px;
+    }
+    
+    /* Позиционирование с учетом уменьшенных размеров */
+    .field-pos-1 { left: 5.5%; top: 44.5%; }
+    .field-pos-2 { left: 14.5%; top: 44.5%; }
+    .field-pos-3 { left: 24.5%; top: 44.5%; }
+    .field-pos-4 { left: 33.5%; top: 44.5%; }
+    .field-pos-5 { left: 43.5%; top: 44.5%; }
+    .field-pos-6 { left: 52.5%; top: 44.5%; }
+    .field-pos-7 { left: 61.5%; top: 44.5%; }
+    .field-pos-8 { left: 71.5%; top: 44.5%; }
+    .field-pos-9 { left: 80.5%; top: 44.5%; }
+    
+    .calendar-sidebar {
+        width: 320px;
+    }
+}
+
+/* Для экранов 1366x768 и небольших ноутбуков */
+@media (max-width: 1366px) {
+    .container {
+        max-width: 900px;
+    }
+    
+    .input-field {
+        width: 94px;
+        height: 56px;
+        font-size: 16px;
+        padding: 8px 10px;
+    }
+    
+    /* Позиционирование с учетом уменьшенных размеров */
+    .field-pos-1 { left: 5%; top: 44%; }
+    .field-pos-2 { left: 14%; top: 44%; }
+    .field-pos-3 { left: 24%; top: 44%; }
+    .field-pos-4 { left: 33%; top: 44%; }
+    .field-pos-5 { left: 43%; top: 44%; }
+    .field-pos-6 { left: 52%; top: 44%; }
+    .field-pos-7 { left: 61%; top: 44%; }
+    .field-pos-8 { left: 71%; top: 44%; }
+    .field-pos-9 { left: 80%; top: 44%; }
+    
+    .calendar-sidebar {
+        width: 300px;
+    }
+    
+    .line-btn {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}
+
+/* Для экранов 1280x720 и аналогичных */
+@media (max-width: 1280px) {
+    .container {
+        max-width: 800px;
+    }
+    
+    .input-field {
+        width: 85px;
+        height: 52px;
+        font-size: 15px;
+        padding: 7px 9px;
+    }
+    
+    /* Позиционирование с учетом уменьшенных размеров */
+    .field-pos-1 { left: 4.5%; top: 43.5%; }
+    .field-pos-2 { left: 13.5%; top: 43.5%; }
+    .field-pos-3 { left: 23.5%; top: 43.5%; }
+    .field-pos-4 { left: 32.5%; top: 43.5%; }
+    .field-pos-5 { left: 42.5%; top: 43.5%; }
+    .field-pos-6 { left: 51.5%; top: 43.5%; }
+    .field-pos-7 { left: 60.5%; top: 43.5%; }
+    .field-pos-8 { left: 70.5%; top: 43.5%; }
+    .field-pos-9 { left: 79.5%; top: 43.5%; }
+    
+    .calendar-sidebar {
+        width: 280px;
+    }
+}
+
+/* ===== ТЕМНАЯ ТЕМА (СИСТЕМНЫЕ ПРЕДПОЧТЕНИЯ) ===== */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+    
+    .auth-container, .calendar-container {
+        background: #2c3e50;
+        color: #ecf0f1;
+    }
+    
+    .user-header, .input-field {
+        background: #34495e;
+    }
+    
+    .input-field[readonly] {
+        background: #2c3e50;
+        color: #000000 !important;
+    }
+    
+    .auth-input {
+        background: #34495e;
+        border-color: #4a6572;
+        color: #ecf0f1;
+    }
+    
+    .auth-input::placeholder {
+        color: #95a5a6;
+    }
+    
+    .current-date {
+        background: #34495e;
+        color: #ecf0f1;
+    }
+    
+    #user-role {
+        color: #ecf0f1;
+    }
+    
+    .image-container {
+        background: #2c3e50;
+    }
+}
