@@ -2,56 +2,49 @@
 // Модуль для работы с облачным хранилищем данных на GitHub
 
 // Константы репозитория GitHub
-const GITHUB_OWNER = 'Alexandrpen'; // Владелец репозитория
-const GITHUB_REPO = 'Shnek-Journal'; // Название репозитория
+const GITHUB_OWNER = 'Alexandrpen';
+const GITHUB_REPO = 'Shnek-Journal';
+const GITHUB_DATA_FILE = 'journal-data.json';
 
-// Класс для работы с GitHub API как с базой данных
 class GitHubDatabase {
     constructor() {
-        // Инициализация свойств класса
         this.owner = GITHUB_OWNER;
         this.repo = GITHUB_REPO;
-        this.branch = 'main'; // Ветка репозитория по умолчанию
-        this.token = null; // Токен авторизации (устанавливается позже)
-        this.dataFile = 'journal-data.json'; // Файл для хранения данных
+        this.branch = 'main';
+        this.token = null;
+        this.dataFile = GITHUB_DATA_FILE;
         this.cache = null;
         this.lastSync = null;
-        this.CACHE_DURATION = 5 * 60 * 1000; // 5 минут
+        this.CACHE_DURATION = 5 * 60 * 1000;
+        
+        // Инициализация токена при создании экземпляра
+        this.token = localStorage.getItem('github_token');
     }
 
     // ===== МЕТОДЫ РАБОТЫ С ТОКЕНОМ =====
 
-    // Установка токена авторизации
     setToken(token) {
         this.token = token;
-        localStorage.setItem('github_token', token); // Сохранение в localStorage
+        localStorage.setItem('github_token', token);
         console.log('GitHub token установлен');
     }
 
-    // Получение токена из памяти или localStorage
     getToken() {
-        if (!this.token) {
-            this.token = localStorage.getItem('github_token'); // Загрузка из localStorage
-        }
         return this.token;
     }
 
-    // Проверка наличия токена
     hasToken() {
-        return !!this.getToken(); // Преобразование в boolean
+        return !!this.token;
     }
 
-    // Очистка токена (при ошибках авторизации)
     clearToken() {
         this.token = null;
-        localStorage.removeItem('github_token'); // Удаление из localStorage
+        localStorage.removeItem('github_token');
         console.log('GitHub token очищен');
     }
 
-    // Запрос токена у пользователя через диалоговое окно
     async requestToken() {
         return new Promise((resolve) => {
-            // Показ диалога с инструкциями
             const token = prompt(
                 '🔐 ДЛЯ ОБЛАЧНОЙ СИНХРОНИЗАЦИИ 🔐\n\n' +
                 'Требуется GitHub Personal Access Token\n\n' +
@@ -66,49 +59,33 @@ class GitHubDatabase {
                 'Токен начинается с ghp_...'
             );
             
-            // Обработка введенного токена
             if (token && token.trim()) {
-                this.setToken(token.trim()); // Сохранение токена
-                resolve(true); // Успешное завершение
+                this.setToken(token.trim());
+                resolve(true);
             } else {
-                resolve(false); // Пользователь отменил ввод
+                resolve(false);
             }
         });
     }
 
-    // ===== МЕТОДЫ РАБОТЫ С API GITHUB =====
+    // ===== ОСНОВНЫЕ МЕТОДЫ РАБОТЫ С GITHUB API =====
 
-    // Проверка подключения к репозиторию
     async testConnection() {
-        // Для гостя проверяем подключение без токена (только для публичных репозиториев)
-        if (!this.hasToken()) {
-            console.log('Проверка подключения к публичному репозиторию без токена');
-        }
-
         try {
-            const headers = {
-                'Accept': 'application/vnd.github.v3+json'
-            };
-
-            // Добавляем токен если есть
-            if (this.hasToken()) {
-                headers['Authorization'] = `token ${this.getToken()}`;
-            }
-
-            // Запрос информации о репозитории
+            const headers = this.getHeaders();
             const response = await fetch(
                 `https://api.github.com/repos/${this.owner}/${this.repo}`,
                 { headers }
             );
 
-            // Проверка статуса ответа
             if (!response.ok) {
-                // Для публичного репозитория может быть 404 если репозиторий не существует
-                // или 403 если репозиторий приватный и нет токена
+                // Для публичных репозиториев разрешаем доступ без токена
                 if (response.status === 404) {
                     throw new Error('Репозиторий не найден');
-                } else if (response.status === 403 && !this.hasToken()) {
-                    throw new Error('Доступ запрещен. Репозиторий приватный, требуется токен.');
+                }
+                if (response.status === 403 && !this.hasToken()) {
+                    // Это нормально для гостя с публичным репозиторием
+                    return true;
                 }
                 throw new Error(`Ошибка подключения: ${response.status}`);
             }
@@ -117,220 +94,176 @@ class GitHubDatabase {
             return true;
         } catch (error) {
             console.error('Ошибка подключения к GitHub:', error);
-            throw error; // Проброс ошибки для обработки выше
+            
+            // Для гостя без токена это не критическая ошибка
+            if (!this.hasToken() && error.message.includes('403')) {
+                console.log('Гостевой доступ к публичному репозиторию');
+                return true;
+            }
+            
+            throw error;
         }
     }
 
-    // Загрузка данных из репозитория с повторными попытками
     async loadData() {
         // Проверяем кэш
-        if (this.cache && this.lastSync && 
-            (Date.now() - this.lastSync) < this.CACHE_DURATION) {
+        if (this.cache && this.lastSync && (Date.now() - this.lastSync) < this.CACHE_DURATION) {
             console.log('Используем кэшированные данные');
             return this.cache;
         }
 
-        let retries = 3; // Количество попыток при конфликтах
-        
-        while (retries > 0) {
-            try {
-                const headers = {
-                    'Accept': 'application/vnd.github.v3+json'
-                };
+        try {
+            const headers = this.getHeaders();
+            const response = await fetch(
+                `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.dataFile}`,
+                { headers }
+            );
 
-                // Добавляем токен если есть
-                if (this.hasToken()) {
-                    headers['Authorization'] = `token ${this.getToken()}`;
-                }
+            if (response.status === 404) {
+                console.log('Файл данных не найден, создаем новый');
+                const emptyData = { line1: {}, line2: {}, line3: {} };
+                this.cache = emptyData;
+                this.lastSync = Date.now();
+                return emptyData;
+            }
 
-                // Запрос содержимого файла данных
-                const response = await fetch(
-                    `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.dataFile}`,
-                    { headers }
-                );
-
-                // Обработка случая когда файл не существует
-                if (response.status === 404) {
-                    console.log('Файл данных не найден, создаем новый');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                
+                // Для гостя без токена и приватного репозитория - это нормально
+                if (response.status === 403 && !this.hasToken()) {
+                    console.log('Гостевой доступ: репозиторий приватный');
                     const emptyData = { line1: {}, line2: {}, line3: {} };
                     this.cache = emptyData;
                     this.lastSync = Date.now();
-                    return emptyData; // Пустая структура
-                }
-
-                // Обработка ошибок HTTP
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    
-                    // Обработка случая когда репозиторий приватный и нет токена
-                    if (response.status === 403 && !this.hasToken()) {
-                        throw new Error('Доступ запрещен. Репозиторий приватный, требуется токен.');
-                    }
-                    
-                    // Повторная попытка при конфликте версий (409)
-                    if (response.status === 409 && retries > 1) {
-                        retries--;
-                        console.log(`Конфликт версий при загрузке. Повторная попытка... (осталось: ${retries})`);
-                        await this.delay(1000); // Задержка перед повторной попыткой
-                        continue;
-                    }
-                    
-                    throw new Error(`Ошибка загрузки: ${response.status} - ${errorData.message || response.statusText}`);
-                }
-
-                // Обработка успешного ответа
-                const data = await response.json();
-                const content = this.decodeBase64(data.content); // Декодирование base64
-                const journalData = JSON.parse(content); // Парсинг JSON
-                
-                // Сохраняем в кэш
-                this.cache = journalData;
-                this.lastSync = Date.now();
-                
-                console.log('Данные загружены из GitHub');
-                return journalData;
-            } catch (error) {
-                // Обработка ошибок с повторными попытками
-                if (error.message.includes('409') && retries > 1) {
-                    retries--;
-                    console.log(`Конфликт версий при загрузке. Повторная попытка... (осталось: ${retries})`);
-                    await this.delay(1000);
-                    continue;
+                    return emptyData;
                 }
                 
-                console.error('Ошибка загрузки данных:', error);
-                
-                // Очистка токена при ошибках авторизации (только если токен был)
-                if (this.hasToken() && (error.message.includes('401') || error.message.includes('403'))) {
+                if (response.status === 401 || response.status === 403) {
                     this.clearToken();
-                    throw new Error('Неверный токен. Токен очищен. Введите новый токен.');
+                    throw new Error('Неверный токен. Токен очищен.');
                 }
                 
-                throw error; // Проброс других ошибок
+                throw new Error(`Ошибка загрузки: ${response.status}`);
             }
+
+            const data = await response.json();
+            const content = this.decodeBase64(data.content);
+            const journalData = JSON.parse(content);
+            
+            this.cache = journalData;
+            this.lastSync = Date.now();
+            
+            console.log('Данные загружены из GitHub');
+            return journalData;
+        } catch (error) {
+            console.error('Ошибка загрузки данных:', error);
+            
+            // Для гостя без токена возвращаем пустые данные
+            if (!this.hasToken()) {
+                console.log('Гость использует локальные данные');
+                const emptyData = { line1: {}, line2: {}, line3: {} };
+                this.cache = emptyData;
+                this.lastSync = Date.now();
+                return emptyData;
+            }
+            
+            throw error;
         }
     }
 
-    // Сохранение данных в репозиторий с обработкой конфликтов
     async saveData(journalData) {
-        // Для гостя сохранение запрещено
         if (!this.hasToken()) {
             throw new Error('Сохранение запрещено. Требуется авторизация с токеном GitHub.');
         }
 
-        let retries = 3; // Количество попыток при конфликтах
-        
-        while (retries > 0) {
+        try {
+            let sha = null;
+            
+            // Получаем SHA текущего файла
             try {
-                // Получаем актуальный SHA текущего файла для предотвращения конфликтов
-                let sha = null;
-                try {
-                    const currentFileResponse = await fetch(
-                        `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.dataFile}`,
-                        {
-                            headers: {
-                                'Authorization': `token ${this.getToken()}`,
-                                'Accept': 'application/vnd.github.v3+json'
-                            }
-                        }
-                    );
-                    
-                    // Если файл существует, получаем его SHA
-                    if (currentFileResponse.ok) {
-                        const data = await currentFileResponse.json();
-                        sha = data.sha; // SHA для контроля версий
-                        console.log('Получен актуальный SHA файла:', sha.substring(0, 8) + '...');
-                    }
-                } catch (e) {
-                    // Файл не существует - это нормально для первого сохранения
-                    console.log('Файл данных не существует, создаем новый');
-                }
-
-                // Подготовка данных для отправки
-                const content = this.encodeBase64(JSON.stringify(journalData, null, 2)); // Кодирование в base64
-                
-                // Отправка данных на GitHub
-                const response = await fetch(
+                const headers = this.getHeaders();
+                const currentFileResponse = await fetch(
                     `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.dataFile}`,
-                    {
-                        method: 'PUT', // Создание или обновление файла
-                        headers: {
-                            'Authorization': `token ${this.getToken()}`,
-                            'Accept': 'application/vnd.github.v3+json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            message: `📊 Обновление данных: ${new Date().toLocaleString('ru-RU')}`, // Коммит-сообщение
-                            content: content, // Закодированное содержимое
-                            branch: this.branch, // Ветка
-                            sha: sha // SHA для контроля версий (null для нового файла)
-                        })
-                    }
+                    { headers }
                 );
-
-                // Обработка ответа от GitHub
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    
-                    // Обработка конфликта версий (409) с повторной попыткой
-                    if (response.status === 409 && retries > 1) {
-                        retries--;
-                        console.log(`Конфликт версий при сохранении. Обновляю SHA и повторяю... (осталось: ${retries})`);
-                        await this.delay(1000);
-                        continue;
-                    }
-                    
-                    // Очистка токена при ошибках авторизации
-                    if (response.status === 401 || response.status === 403) {
-                        this.clearToken();
-                        throw new Error('Неверный токен. Токен очищен.');
-                    }
-                    
-                    throw new Error(`Ошибка сохранения: ${response.status} - ${errorData.message || response.statusText}`);
-                }
-
-                // Обновляем кэш
-                this.cache = journalData;
-                this.lastSync = Date.now();
                 
-                console.log('Данные успешно сохранены в GitHub');
-                return true;
-            } catch (error) {
-                // Обработка ошибок с повторными попытками
-                if (error.message.includes('409') && retries > 1) {
-                    retries--;
-                    console.log(`Конфликт версий при сохранении. Повторная попытка... (осталось: ${retries})`);
-                    await this.delay(1000);
-                    continue;
+                if (currentFileResponse.ok) {
+                    const data = await currentFileResponse.json();
+                    sha = data.sha;
                 }
-                
-                console.error('Ошибка сохранения данных:', error);
-                throw error; // Проброс ошибки после всех попыток
+            } catch (e) {
+                console.log('Файл данных не существует, создаем новый');
             }
+
+            const content = this.encodeBase64(JSON.stringify(journalData, null, 2));
+            const headers = this.getHeaders();
+            
+            const response = await fetch(
+                `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.dataFile}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        ...headers,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `📊 Обновление данных: ${new Date().toLocaleString('ru-RU')}`,
+                        content: content,
+                        branch: this.branch,
+                        sha: sha
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                
+                if (response.status === 409) {
+                    throw new Error('Конфликт версий. Попробуйте синхронизировать данные.');
+                }
+                
+                if (response.status === 401 || response.status === 403) {
+                    this.clearToken();
+                    throw new Error('Неверный токен. Токен очищен.');
+                }
+                
+                throw new Error(`Ошибка сохранения: ${response.status}`);
+            }
+
+            this.cache = journalData;
+            this.lastSync = Date.now();
+            
+            console.log('Данные успешно сохранены в GitHub');
+            return true;
+        } catch (error) {
+            console.error('Ошибка сохранения данных:', error);
+            throw error;
         }
-        
-        // Если все попытки исчерпаны
-        throw new Error('Не удалось сохранить данные после нескольких попыток');
     }
 
     // ===== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ =====
 
-    // Функция задержки для повторных попыток
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    getHeaders() {
+        const headers = {
+            'Accept': 'application/vnd.github.v3+json'
+        };
+
+        if (this.hasToken()) {
+            headers['Authorization'] = `token ${this.getToken()}`;
+        }
+
+        return headers;
     }
 
-    // Кодирование строки в base64 (совместимость с GitHub API)
     encodeBase64(str) {
         return btoa(unescape(encodeURIComponent(str)));
     }
 
-    // Декодирование из base64
     decodeBase64(str) {
         return decodeURIComponent(escape(atob(str)));
     }
-    
-    // Принудительная очистка кэша
+
     clearCache() {
         this.cache = null;
         this.lastSync = null;
