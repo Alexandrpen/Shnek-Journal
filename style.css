@@ -225,18 +225,18 @@ body {
 /* Общие стили для всех полей ввода */
 .input-field {
     position: absolute;
-    padding: 10px 12px; /* Увеличено на 30% */
+    padding: 12px 14px; /* Увеличено еще на 20% */
     border: 2px solid #dc3545;
     border-radius: 6px;
-    font-size: 18px; /* Увеличено на 30% */
+    font-size: 22px; /* Увеличено еще на 20% */
     text-align: center;
     background: rgba(255, 255, 255, 0.95);
     color: #000000 !important;
     transition: all 0.3s ease;
     font-weight: 500;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    width: 91px; /* Увеличено на 30% (70px * 1.3 = 91px) */
-    height: 52px; /* Увеличено на 30% (40px * 1.3 = 52px) */
+    width: 131px; /* Увеличено еще на 20% (109px * 1.2 = 131px) */
+    height: 74px; /* Увеличено еще на 20% (62px * 1.2 = 74px) */
     z-index: 5;
 }
 
@@ -250,7 +250,7 @@ body {
 .input-field::placeholder {
     color: #000000 !important;
     font-weight: normal;
-    font-size: 16px; /* Увеличено на 30% */
+    font-size: 19px; /* Увеличено еще на 20% */
 }
 
 .input-field[readonly] {
@@ -265,63 +265,50 @@ body {
 
 /* ===== НЕЗАВИСИМОЕ ПОЗИЦИОНИРОВАНИЕ КАЖДОГО ПОЛЯ ===== */
 
-/* Поле 1 - Верхний левый угол */
+/* Базовые позиции для больших экранов (1920px+) */
 .field-pos-1 {
     top: 45%;
-    left: 7%;
+    left: 5%; /* Сдвинуто для учета увеличенных размеров */
 }
 
-/* Поле 2 - Верхний центр */
 .field-pos-2 {
     top: 45%;
-    left: 17%;
-   
+    left: 16%; /* Увеличено расстояние */
 }
 
-/* Поле 3 - Верхний правый угол */
 .field-pos-3 {
     top: 45%;
-   left: 26%;
+    left: 27%; /* Увеличено расстояние */
 }
 
-/* Поле 4 - Центр левый */
 .field-pos-4 {
     top: 45%;
-    left: 35%;
-    
+    left: 38%; /* Увеличено расстояние */
 }
 
-/* Поле 5 - Центр */
 .field-pos-5 {
     top: 45%;
-    left: 44.5%;
-   
+    left: 49%; /* Увеличено расстояние */
 }
 
-/* Поле 6 - Центр правый */
 .field-pos-6 {
     top: 45%;
-    left: 54%;
-   
+    left: 60%; /* Увеличено расстояние */
 }
 
-/* Поле 7 - Нижний левый угол */
 .field-pos-7 {
-   top: 45%;
-    left: 63.6%;
+    top: 45%;
+    left: 71%; /* Увеличено расстояние */
 }
 
-/* Поле 8 - Нижний центр */
 .field-pos-8 {
     top: 45%;
-    left: 72.7%;
-   
+    left: 82%; /* Увеличено расстояние */
 }
 
-/* Поле 9 - Нижний правый угол */
 .field-pos-9 {
     top: 45%;
-     left: 82%;
+    left: 93%; /* Увеличено расстояние */
 }
 
 /* ===== КАЛЕНДАРЬ СПРАВА ===== */
@@ -434,20 +421,22 @@ body {
     }
     
     .input-field {
-        width: 85px; /* Увеличено на 30% */
-        height: 49px; /* Увеличено на 30% */
-        font-size: 17px; /* Увеличено на 30% */
+        width: 122px; /* Увеличено еще на 20% */
+        height: 71px; /* Увеличено еще на 20% */
+        font-size: 20px; /* Увеличено еще на 20% */
+        padding: 11px 13px;
     }
     
-    .field-pos-1 { left: 6%; }
-    .field-pos-2 { left: 16%; }
-    .field-pos-3 { left: 25%; }
-    .field-pos-4 { left: 34%; }
-    .field-pos-5 { left: 43.5%; }
-    .field-pos-6 { left: 53%; }
-    .field-pos-7 { left: 62.6%; }
-    .field-pos-8 { left: 71.7%; }
-    .field-pos-9 { left: 80.8%; }
+    /* Адаптивное позиционирование для 1600px */
+    .field-pos-1 { left: 4.5%; }
+    .field-pos-2 { left: 15.5%; }
+    .field-pos-3 { left: 26.5%; }
+    .field-pos-4 { left: 37.5%; }
+    .field-pos-5 { left: 48.5%; }
+    .field-pos-6 { left: 59.5%; }
+    .field-pos-7 { left: 70.5%; }
+    .field-pos-8 { left: 81.5%; }
+    .field-pos-9 { left: 92.5%; }
 }
 
 @media (max-width: 1400px) {
@@ -456,20 +445,22 @@ body {
     }
     
     .input-field {
-        width: 78px; /* Увеличено на 30% */
-        height: 46px; /* Увеличено на 30% */
-        font-size: 16px; /* Увеличено на 30% */
+        width: 113px; /* Увеличено еще на 20% */
+        height: 66px; /* Увеличено еще на 20% */
+        font-size: 19px; /* Увеличено еще на 20% */
+        padding: 10px 12px;
     }
     
-    .field-pos-1 { left: 5.5%; }
-    .field-pos-2 { left: 15.5%; }
-    .field-pos-3 { left: 24.5%; }
-    .field-pos-4 { left: 33.5%; }
-    .field-pos-5 { left: 43%; }
-    .field-pos-6 { left: 52.5%; }
-    .field-pos-7 { left: 62%; }
-    .field-pos-8 { left: 71%; }
-    .field-pos-9 { left: 80%; }
+    /* Адаптивное позиционирование для 1400px */
+    .field-pos-1 { left: 4%; }
+    .field-pos-2 { left: 15%; }
+    .field-pos-3 { left: 26%; }
+    .field-pos-4 { left: 37%; }
+    .field-pos-5 { left: 48%; }
+    .field-pos-6 { left: 59%; }
+    .field-pos-7 { left: 70%; }
+    .field-pos-8 { left: 81%; }
+    .field-pos-9 { left: 92%; }
 }
 
 @media (max-width: 1200px) {
@@ -478,20 +469,22 @@ body {
     }
     
     .input-field {
-        width: 72px; /* Увеличено на 30% */
-        height: 42px; /* Увеличено на 30% */
-        font-size: 14px; /* Увеличено на 30% */
+        width: 103px; /* Увеличено еще на 20% */
+        height: 60px; /* Увеличено еще на 20% */
+        font-size: 17px; /* Увеличено еще на 20% */
+        padding: 9px 11px;
     }
     
-    .field-pos-1 { left: 5%; }
-    .field-pos-2 { left: 15%; }
-    .field-pos-3 { left: 24%; }
-    .field-pos-4 { left: 33%; }
-    .field-pos-5 { left: 42.5%; }
-    .field-pos-6 { left: 52%; }
-    .field-pos-7 { left: 61.5%; }
-    .field-pos-8 { left: 70.5%; }
-    .field-pos-9 { left: 79.5%; }
+    /* Адаптивное позиционирование для 1200px */
+    .field-pos-1 { left: 3.5%; }
+    .field-pos-2 { left: 14.5%; }
+    .field-pos-3 { left: 25.5%; }
+    .field-pos-4 { left: 36.5%; }
+    .field-pos-5 { left: 47.5%; }
+    .field-pos-6 { left: 58.5%; }
+    .field-pos-7 { left: 69.5%; }
+    .field-pos-8 { left: 80.5%; }
+    .field-pos-9 { left: 91.5%; }
     
     .calendar-sidebar {
         width: 320px;
@@ -504,20 +497,22 @@ body {
     }
     
     .input-field {
-        width: 65px; /* Увеличено на 30% */
-        height: 39px; /* Увеличено на 30% */
-        font-size: 13px; /* Увеличено на 30% */
+        width: 94px; /* Увеличено еще на 20% */
+        height: 56px; /* Увеличено еще на 20% */
+        font-size: 16px; /* Увеличено еще на 20% */
+        padding: 8px 10px;
     }
     
-    .field-pos-1 { left: 4.5%; }
-    .field-pos-2 { left: 14.5%; }
-    .field-pos-3 { left: 23.5%; }
-    .field-pos-4 { left: 32.5%; }
-    .field-pos-5 { left: 42%; }
-    .field-pos-6 { left: 51.5%; }
-    .field-pos-7 { left: 61%; }
-    .field-pos-8 { left: 70%; }
-    .field-pos-9 { left: 79%; }
+    /* Адаптивное позиционирование для 1024px */
+    .field-pos-1 { left: 3%; }
+    .field-pos-2 { left: 14%; }
+    .field-pos-3 { left: 25%; }
+    .field-pos-4 { left: 36%; }
+    .field-pos-5 { left: 47%; }
+    .field-pos-6 { left: 58%; }
+    .field-pos-7 { left: 69%; }
+    .field-pos-8 { left: 80%; }
+    .field-pos-9 { left: 91%; }
     
     .calendar-sidebar {
         width: 300px;
