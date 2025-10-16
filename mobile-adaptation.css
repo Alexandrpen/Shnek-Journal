@@ -1,0 +1,117 @@
+/* mobile-adaptation.css */
+/* Адаптация для мобильных устройств */
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .container {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    
+    .user-header {
+        position: relative;
+        top: 0;
+        left: 0;
+        right: 0;
+        margin-bottom: 15px;
+        padding: 10px 15px;
+    }
+    
+    .main-content {
+        flex-direction: column;
+        margin-top: 20px;
+        height: auto;
+        gap: 20px;
+    }
+    
+    .content-left {
+        order: 2;
+    }
+    
+    .calendar-sidebar {
+        width: 100%;
+        order: 1;
+    }
+    
+    .line-selector {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .line-btn {
+        flex: 1;
+        min-width: 100px;
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+    
+    .image-container {
+        min-height: 300px;
+    }
+    
+    .input-field {
+        width: 60px;
+        height: 35px;
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+    
+    /* Адаптивное позиционирование полей для мобильных */
+    .field-pos-1 { top: 40%; left: 5%; }
+    .field-pos-2 { top: 40%; left: 15%; }
+    .field-pos-3 { top: 40%; left: 25%; }
+    .field-pos-4 { top: 40%; left: 35%; }
+    .field-pos-5 { top: 40%; left: 45%; }
+    .field-pos-6 { top: 40%; left: 55%; }
+    .field-pos-7 { top: 40%; left: 65%; }
+    .field-pos-8 { top: 40%; left: 75%; }
+    .field-pos-9 { top: 40%; left: 85%; }
+    
+    .controls {
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .save-btn, .sync-btn {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    .calendar-container {
+        padding: 15px;
+    }
+    
+    .flatpickr-calendar {
+        width: 100% !important;
+    }
+    
+    .auth-container {
+        width: 95%;
+        padding: 20px;
+    }
+}
+
+/* Дополнительная адаптация для очень маленьких экранов */
+@media (max-width: 480px) {
+    .input-field {
+        width: 50px;
+        height: 30px;
+        font-size: 11px;
+    }
+    
+    .line-btn {
+        min-width: 80px;
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+    
+    .user-info {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}
