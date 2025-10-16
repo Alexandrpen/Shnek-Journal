@@ -203,6 +203,7 @@ function setupResponsiveScaling() {
         if (scaleFactor < 1) {
             inputs.forEach(input => {
                 const currentTransform = input.style.transform || 'scale(1)';
+                // Учитываем увеличенные размеры полей
                 input.style.transform = `scale(${scaleFactor})`;
             });
         } else {
@@ -216,7 +217,8 @@ function setupResponsiveScaling() {
     updateScale();
     window.addEventListener('resize', updateScale);
 }
-
+    
+  
 // Очистка предыдущего состояния приложения
 function cleanupPreviousState() {
     // Сброс полей ввода
