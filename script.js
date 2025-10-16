@@ -25,6 +25,7 @@ let currentDate = new Date(); // Текущая выбранная дата
 let calendar; // Объект календаря Flatpickr
 let currentLine = 'line1'; // Текущая выбранная производственная линия
 let currentUser = null; // Текущий авторизованный пользователь
+let autoSyncEnabled = true; // Флаг автоматической синхронизации
 
 // ===== ФУНКЦИИ АВТОРИЗАЦИИ И УПРАВЛЕНИЯ ПОЛЬЗОВАТЕЛЯМИ =====
 
@@ -163,12 +164,23 @@ function cleanupPreviousState() {
 function setupLineButtons() {
     const lineButtons = document.querySelectorAll('.line-btn');
     lineButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
             // Снятие активности со всех кнопок
             lineButtons.forEach(b => b.classList.remove('active'));
             // Установка активности на текущую кнопку
             this.classList.add('active');
             currentLine = this.getAttribute('data-line'); // Обновление текущей линии
+            
+            // Автоматическая синхронизация при переключении линии
+            if (autoSyncEnabled && currentUser.role === 'admin') {
+                try {
+                    showStatus('🔄 Автосинхронизация при переключении линии...', 'info');
+                    await syncFromCloud();
+                } catch (error) {
+                    console.log('Автосинхронизация не удалась, используем локальные данные');
+                }
+            }
+            
             loadDataForCurrentDate(); // Загрузка данных для выбранной линии
             showStatus(`🔄 Переключено на ${this.textContent}`, 'info');
         });
@@ -504,7 +516,7 @@ function formatDate(date) {
 // Настройка валидации и обработки ввода в полях
 function setupInputValidation() {
     document.querySelectorAll('.input-field').forEach(field => {
-        // Обработчик ввода (реaltime валидация)
+        // Обработчик ввода (realtime валидация)
         field.addEventListener('input', function(e) {
             // Блокировка ввода для гостя
             if (currentUser.role === 'guest') {
