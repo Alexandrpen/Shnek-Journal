@@ -225,18 +225,18 @@ body {
 /* Общие стили для всех полей ввода */
 .input-field {
     position: absolute;
-    padding: 8px 10px;
+    padding: 5px 7px; /* Уменьшенный padding на 30% */
     border: 2px solid #dc3545;
-    border-radius: 4px;
-    font-size: 16px;
+    border-radius: 3px; /* Уменьшенный радиус */
+    font-size: 12px; /* Уменьшенный размер шрифта на 30% */
     text-align: center;
     background: rgba(255, 255, 255, 0.95);
     color: #000000 !important;
     transition: all 0.3s ease;
     font-weight: 500;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    width: 90px;
-    height: 50px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Уменьшенная тень */
+    width: 63px; /* Уменьшенная ширина на 30% (90px * 0.7) */
+    height: 35px; /* Уменьшенная высота на 30% (50px * 0.7) */
     z-index: 5;
 }
 
@@ -250,7 +250,7 @@ body {
 .input-field::placeholder {
     color: #000000 !important;
     font-weight: normal;
-    font-size: 14px;
+    font-size: 10px; /* Уменьшенный размер шрифта placeholder на 30% */
 }
 
 .input-field[readonly] {
@@ -422,10 +422,10 @@ body {
     }
     
     .input-field {
-        width: 85px;
-        height: 48px;
-        font-size: 15px;
-        padding: 7px 9px;
+        width: 59px; /* Уменьшено на 30% */
+        height: 33px; /* Уменьшено на 30% */
+        font-size: 11px; /* Уменьшено на 30% */
+        padding: 4px 6px; /* Уменьшено на 30% */
     }
     
     /* Позиционирование с учетом уменьшенных размеров */
@@ -447,10 +447,10 @@ body {
     }
     
     .input-field {
-        width: 80px;
-        height: 45px;
-        font-size: 14px;
-        padding: 6px 8px;
+        width: 56px; /* Уменьшено на 30% */
+        height: 31px; /* Уменьшено на 30% */
+        font-size: 10px; /* Уменьшено на 30% */
+        padding: 4px 5px; /* Уменьшено на 30% */
     }
     
     /* Позиционирование с учетом уменьшенных размеров */
@@ -472,10 +472,10 @@ body {
     }
     
     .input-field {
-        width: 75px;
-        height: 42px;
-        font-size: 13px;
-        padding: 5px 7px;
+        width: 52px; /* Уменьшено на 30% */
+        height: 29px; /* Уменьшено на 30% */
+        font-size: 9px; /* Уменьшено на 30% */
+        padding: 3px 4px; /* Уменьшено на 30% */
     }
     
     /* Позиционирование с учетом уменьшенных размеров */
@@ -501,10 +501,10 @@ body {
     }
     
     .input-field {
-        width: 70px;
-        height: 40px;
-        font-size: 12px;
-        padding: 4px 6px;
+        width: 49px; /* Уменьшено на 30% */
+        height: 28px; /* Уменьшено на 30% */
+        font-size: 8px; /* Уменьшено на 30% */
+        padding: 3px 4px; /* Уменьшено на 30% */
     }
     
     /* Позиционирование с учетом уменьшенных размеров */
@@ -535,10 +535,10 @@ body {
     }
     
     .input-field {
-        width: 65px;
-        height: 38px;
-        font-size: 11px;
-        padding: 3px 5px;
+        width: 45px; /* Уменьшено на 30% */
+        height: 26px; /* Уменьшено на 30% */
+        font-size: 8px; /* Уменьшено на 30% */
+        padding: 2px 3px; /* Уменьшено на 30% */
     }
     
     /* Позиционирование с учетом уменьшенных размеров */
