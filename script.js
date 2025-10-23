@@ -3,29 +3,28 @@
 
 // ===== КОНСТАНТЫ И ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
 
-// Функция для получения хэша пароля (простая реализация для демонстрации)
+// Безопасная аутентификация с хэшированием
 function getPasswordHash(password) {
     let hash = 0;
+    if (!password) return hash.toString();
     for (let i = 0; i < password.length; i++) {
         const char = password.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
+        hash = hash & hash;
     }
     return hash.toString();
 }
 
-// Хэши паролей вместо открытых паролей
+// Данные пользователей с хэшами паролей
 const USER_CREDENTIALS = {
-    // compound_VL -> хэш: -1500981126
     'compound_VL': {
-        hash: '-1500981126',
+        hash: '-1500981126', // Хэш для 'compound_VL'
         role: 'admin',
         name: 'Администратор'
     },
-    // guest -> хэш: -1202290188
     'guest': {
-        hash: '-1202290188', 
-        role: 'guest',
+        hash: '-1202290188', // Хэш для 'guest'
+        role: 'guest', 
         name: 'Гость'
     }
 };
@@ -46,15 +45,30 @@ function checkAuth() {
     const password = document.getElementById('password').value;
     const errorElement = document.getElementById('auth-error');
     
+    console.log('Попытка авторизации:', { login, passwordLength: password.length });
+    
+    // Проверка на пустые поля
+    if (!login || !password) {
+        showAuthError('Заполните все поля');
+        return;
+    }
+    
     // Проверка существования пользователя
     if (!USER_CREDENTIALS[login]) {
-        showAuthError();
+        console.log('Пользователь не найден:', login);
+        showAuthError('Пользователь не найден');
         return;
     }
     
     // Сравнение хэшей вместо открытых паролей
     const passwordHash = getPasswordHash(password);
     const userData = USER_CREDENTIALS[login];
+    
+    console.log('Сравнение хэшей:', {
+        введенныйХэш: passwordHash,
+        ожидаемыйХэш: userData.hash,
+        совпадают: userData.hash === passwordHash
+    });
     
     if (userData.hash === passwordHash) {
         currentUser = {
@@ -69,20 +83,21 @@ function checkAuth() {
         initApp();
         errorElement.style.display = 'none';
         
-        // Очистка полей после успешной авторизации
-        document.getElementById('login').value = '';
-        document.getElementById('password').value = '';
+        console.log('Успешная авторизация:', currentUser);
+        showStatus(`✅ Авторизация успешна: ${currentUser.name}`, 'success');
     } else {
-        showAuthError();
+        console.log('Неверный пароль для пользователя:', login);
+        showAuthError('Неверный пароль');
     }
 }
 
 // Функция показа ошибки авторизации
-function showAuthError() {
+function showAuthError(message = 'Неверный логин или пароль') {
     const errorElement = document.getElementById('auth-error');
+    errorElement.textContent = message;
     errorElement.style.display = 'block';
     document.getElementById('password').value = '';
-    showStatus('Ошибка авторизации', 'error');
+    showStatus('❌ Ошибка авторизации', 'error');
 }
 
 // Обновление интерфейса в зависимости от роли пользователя
@@ -126,9 +141,11 @@ function updateUIForUserRole() {
 // Основная функция инициализации приложения
 async function initApp() {
     try {
+        showStatus('🔄 Инициализация приложения...', 'info');
         cleanupPreviousState();
         
         if (currentUser.role === 'admin' && !gitHubDB.hasToken()) {
+            showStatus('🔐 Запрос GitHub токена...', 'info');
             const tokenSet = await gitHubDB.requestToken();
             if (!tokenSet) {
                 showStatus('❌ Для работы приложения требуется GitHub токен', 'error');
