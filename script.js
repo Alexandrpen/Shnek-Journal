@@ -3,32 +3,33 @@
 
 // ===== КОНСТАНТЫ И ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
 
-// Безопасная аутентификация с хэшированием
-function getPasswordHash(password) {
-    let hash = 0;
-    if (!password) return hash.toString();
-    for (let i = 0; i < password.length; i++) {
-        const char = password.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
+// Временное решение - простая проверка (удалите после отладки)
+function checkAuth() {
+    const login = document.getElementById('login').value.trim();
+    const password = document.getElementById('password').value;
+    
+    if ((login === 'compound_VL' && password === 'compound_VL') || 
+        (login === 'guest' && password === 'guest')) {
+        
+        currentUser = {
+            login: login,
+            role: login === 'compound_VL' ? 'admin' : 'guest',
+            name: login === 'compound_VL' ? 'Администратор' : 'Гость'
+        };
+        
+        document.getElementById('auth-overlay').style.display = 'none';
+        document.querySelector('.container').style.display = 'block';
+        updateUIForUserRole();
+        initApp();
+        document.getElementById('auth-error').style.display = 'none';
+        
+        showStatus(`✅ Авторизация успешна: ${currentUser.name}`, 'success');
+    } else {
+        document.getElementById('auth-error').style.display = 'block';
+        document.getElementById('password').value = '';
+        showStatus('❌ Ошибка авторизации', 'error');
     }
-    return hash.toString();
 }
-
-// Данные пользователей с хэшами паролей
-const USER_CREDENTIALS = {
-    'compound_VL': {
-        hash: '-1500981126', // Хэш для 'compound_VL'
-        role: 'admin',
-        name: 'Администратор'
-    },
-    'guest': {
-        hash: '-1202290188', // Хэш для 'guest'
-        role: 'guest', 
-        name: 'Гость'
-    }
-};
-
 // Глобальные переменные состояния приложения
 let journalData = {};
 let currentDate = new Date();
@@ -630,3 +631,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     showStatus('⏳ Ожидание авторизации...', 'info');
 });
+
